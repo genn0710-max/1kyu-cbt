@@ -425,34 +425,14 @@ createApp({
     };
 
     // ==========================================
-    // 🔆 画面スリープ・タイムアウト防止（Wake Lock API ＆ キープアライブ）
+    // 🔆 画面スリープ防止（Wake Lock API - 音声と競合しない標準方式）
     // ==========================================
     const isWakeLockSupported = ref(typeof navigator !== 'undefined' && 'wakeLock' in navigator);
     const isWakeLockActive = ref(false);
-    const wakeLockManualOverride = ref(false); // 手動での常時ON
+    const wakeLockManualOverride = ref(false);
     let wakeLockSentinel = null;
-    let silentAudioEl = null;
-
-    // iOS/Android共通の無音オーディオ初期化（メディア再生中フラグでバックグラウンド維持）
-    const initSilentAudio = () => {
-      if (silentAudioEl) return;
-      try {
-        silentAudioEl = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-        silentAudioEl.loop = true;
-        silentAudioEl.setAttribute('playsinline', '');
-        silentAudioEl.setAttribute('webkit-playsinline', '');
-        silentAudioEl.volume = 0.001;
-      } catch (e) {}
-    };
 
     const acquireWakeLock = async () => {
-      initSilentAudio();
-      if (silentAudioEl) {
-        try {
-          silentAudioEl.play().catch(() => {});
-        } catch (e) {}
-      }
-
       if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
         try {
           if (!wakeLockSentinel) {
@@ -469,16 +449,10 @@ createApp({
           console.log('[WakeLock] Request notice:', err);
         }
       }
-      isWakeLockActive.value = true; // オーディオキープアライブまたはWakeLock動作中
     };
 
     const releaseWakeLock = async () => {
-      if (wakeLockManualOverride.value) return; // 手動常時ONの場合は解除しない
-      if (silentAudioEl) {
-        try {
-          silentAudioEl.pause();
-        } catch (e) {}
-      }
+      if (wakeLockManualOverride.value) return;
       if (wakeLockSentinel) {
         try {
           await wakeLockSentinel.release();
@@ -528,10 +502,20 @@ createApp({
       releaseWakeLock();
     };
 
+    // 音声テスト＆強制アンロック関数
+    const testSpeech = () => {
+      stopSpeech();
+      speakText('音声テストです。正常に読み上げが行われています。マナーモードがオフになっていることをご確認ください。');
+    };
+
     const speakText = (text, onEndCallback = null) => {
-      if (!isSpeechSupported.value) return;
-      unlockAudioSpeech();
-      if (window.speechSynthesis) {
+      if (!isSpeechSupported.value || !window.speechSynthesis) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      // iOS Safari のバグ回避: すでに発話中の場合のみ cancel
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
         window.speechSynthesis.cancel();
       }
 
@@ -542,8 +526,11 @@ createApp({
       utterance.lang = 'ja-JP';
       utterance.rate = Number(speechRate.value) || 1.0;
       utterance.pitch = 1.0;
+
       const jVoice = getJapaneseVoice();
-      if (jVoice) utterance.voice = jVoice;
+      if (jVoice) {
+        utterance.voice = jVoice;
+      }
 
       utterance.onstart = () => {
         isSpeaking.value = true;
@@ -554,13 +541,25 @@ createApp({
         if (onEndCallback) onEndCallback();
       };
 
-      utterance.onerror = () => {
+      utterance.onerror = (e) => {
+        console.warn('[Speech] Utterance error:', e);
         isSpeaking.value = false;
         if (onEndCallback) onEndCallback();
       };
 
       currentUtterance = utterance;
-      window.speechSynthesis.speak(utterance);
+
+      // iOS Safari WebKit バグ（cancel直後のspeakが無視される問題）を防ぐため50ms待機
+      setTimeout(() => {
+        try {
+          window.speechSynthesis.resume(); // 一時停止状態の解除
+          window.speechSynthesis.speak(utterance);
+        } catch (e) {
+          console.error('[Speech] speak error:', e);
+          isSpeaking.value = false;
+          if (onEndCallback) onEndCallback();
+        }
+      }, 50);
     };
 
     // 現在の単語を読み上げる（手動ボタン）
@@ -1371,7 +1370,8 @@ createApp({
       isWakeLockSupported,
       isWakeLockActive,
       wakeLockManualOverride,
-      toggleManualWakeLock
+      toggleManualWakeLock,
+      testSpeech
     };
   }
 }).mount('#app');

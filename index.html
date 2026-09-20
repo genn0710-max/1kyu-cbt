@@ -510,6 +510,13 @@
               <span>⏹</span> 音声を停止
             </button>
 
+            <!-- 音声テストボタン -->
+            <button 
+              @click="testSpeech" 
+              class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-600/60 flex items-center gap-1 text-xs">
+              <span>🔊</span> テスト発話
+            </button>
+
             <!-- スリープ防止インジケーター -->
             <span v-if="isWakeLockActive" class="text-[11px] bg-amber-950/80 text-amber-300 border border-amber-600/80 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold animate-pulse">
               <span>🔆</span> 画面スリープ防止中（無操作OK）
