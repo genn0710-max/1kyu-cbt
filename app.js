@@ -399,14 +399,12 @@ createApp({
       }
     }
 
-    // モバイル用音声アンロック（iOS / Android の自動再生制限解除）
+    // モバイル用音声アンロック
     let isAudioUnlocked = false;
     const unlockAudioSpeech = () => {
       if (isAudioUnlocked || !window.speechSynthesis) return;
       try {
-        const u = new SpeechSynthesisUtterance('');
-        u.volume = 0;
-        window.speechSynthesis.speak(u);
+        window.speechSynthesis.resume();
         isAudioUnlocked = true;
       } catch (e) {}
     };
@@ -420,7 +418,6 @@ createApp({
     const getJapaneseVoice = () => {
       if (!window.speechSynthesis) return null;
       const list = availableVoices.value.length > 0 ? availableVoices.value : window.speechSynthesis.getVoices();
-      // Google 日本語, Kyoko, Otoya, または ja-JP
       return list.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja')) || null;
     };
 
@@ -514,10 +511,8 @@ createApp({
         return;
       }
 
-      // iOS Safari のバグ回避: すでに発話中の場合のみ cancel
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-        window.speechSynthesis.cancel();
-      }
+      // 進行中の発話をキャンセル
+      window.speechSynthesis.cancel();
 
       // 正しい日本語発音テキストに正規化変換
       const spokenText = normalizeSpeechText(text);
@@ -549,17 +544,23 @@ createApp({
 
       currentUtterance = utterance;
 
-      // iOS Safari WebKit バグ（cancel直後のspeakが無視される問題）を防ぐため50ms待機
-      setTimeout(() => {
+      // ユーザーの同期タップ枠内で即座に実行！
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.error('[Speech] speak error:', e);
         try {
-          window.speechSynthesis.resume(); // 一時停止状態の解除
-          window.speechSynthesis.speak(utterance);
-        } catch (e) {
-          console.error('[Speech] speak error:', e);
-          isSpeaking.value = false;
+          const fallback = new SpeechSynthesisUtterance(spokenText);
+          fallback.lang = 'ja-JP';
+          fallback.onend = onEndCallback;
+          window.speechSynthesis.speak(fallback);
+        } catch (e2) {
           if (onEndCallback) onEndCallback();
         }
-      }, 50);
+      }
     };
 
     // 現在の単語を読み上げる（手動ボタン）
@@ -596,13 +597,13 @@ createApp({
     };
 
     // 🚗 車両通勤・ハンズフリー自動連続耳学モード
-    const toggleAutoPlay = async () => {
+    const toggleAutoPlay = () => {
       if (isAutoPlay.value) {
         stopSpeech();
       } else {
         stopSpeech();
         isAutoPlay.value = true;
-        await acquireWakeLock();
+        acquireWakeLock().catch(() => {});
         playWordAutoCycle();
       }
     };
@@ -663,13 +664,13 @@ createApp({
     };
 
     // 🚗 振り返り画面での「連続耳学モード（音声解説リスニング）」
-    const toggleReviewAutoPlay = async () => {
+    const toggleReviewAutoPlay = () => {
       if (isReviewAutoPlay.value) {
         stopSpeech();
       } else {
         stopSpeech();
         isReviewAutoPlay.value = true;
-        await acquireWakeLock();
+        acquireWakeLock().catch(() => {});
         currentReviewSpeechIndex.value = 0;
         playReviewAutoCycle();
       }

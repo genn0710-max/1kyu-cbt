@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.2-audio-fix';
+const CACHE_NAME = 'cbt-arch-v2.3-speech-sync';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
