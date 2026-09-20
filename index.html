@@ -67,8 +67,17 @@
           </span>
           <!-- オフライン/オンラインバッジ -->
           <span v-if="!isOnline" class="text-[11px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold animate-pulse">
-            <span>✈️</span> オフライン動作中（全問学習可能）
+            <span>✈️</span> オフライン動作中
           </span>
+          <!-- 🔆 画面スリープ防止トグルボタン -->
+          <button 
+            @click="toggleManualWakeLock" 
+            :class="isWakeLockActive ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-md shadow-amber-500/30' : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200'"
+            class="text-[11px] border px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all select-none cursor-pointer"
+            :title="isWakeLockActive ? '画面スリープ防止が作動中です（無操作でも消灯しません）' : 'タップで画面スリープ防止をONにします'">
+            <span>🔆</span>
+            <span>{{ isWakeLockActive ? 'スリープ防止: ON' : 'スリープ防止: OFF' }}</span>
+          </button>
         </div>
         <p class="text-xs text-slate-400 mt-1">10分スキマ実戦 × 20分濃縮解説（現場知見付） × 72文本番模試 × 工種別演習</p>
       </div>
@@ -500,6 +509,11 @@
               class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1 text-xs">
               <span>⏹</span> 音声を停止
             </button>
+
+            <!-- スリープ防止インジケーター -->
+            <span v-if="isWakeLockActive" class="text-[11px] bg-amber-950/80 text-amber-300 border border-amber-600/80 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold animate-pulse">
+              <span>🔆</span> 画面スリープ防止中（無操作OK）
+            </span>
           </div>
 
           <div class="flex items-center gap-2 text-slate-300">
@@ -675,13 +689,18 @@
               </p>
             </div>
 
-            <button 
-              @click="toggleReviewAutoPlay" 
-              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-xs shadow-lg transition-all active:scale-[0.98]"
-              :class="isReviewAutoPlay ? 'bg-rose-600 text-white animate-pulse ring-2 ring-rose-400 shadow-rose-600/50' : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-500/30'">
-              <span class="text-sm">{{ isReviewAutoPlay ? '⏹' : '🎧' }}</span>
-              <span>{{ isReviewAutoPlay ? '振り返り耳学を停止' : '🎧 振り返り耳学を開始（連続音声解説）' }}</span>
-            </button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button 
+                @click="toggleReviewAutoPlay" 
+                class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-xs shadow-lg transition-all active:scale-[0.98]"
+                :class="isReviewAutoPlay ? 'bg-rose-600 text-white animate-pulse ring-2 ring-rose-400 shadow-rose-600/50' : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-500/30'">
+                <span class="text-sm">{{ isReviewAutoPlay ? '⏹' : '🎧' }}</span>
+                <span>{{ isReviewAutoPlay ? '振り返り耳学を停止' : '🎧 振り返り耳学を開始（連続音声解説）' }}</span>
+              </button>
+              <span v-if="isWakeLockActive" class="text-[11px] bg-amber-950/80 text-amber-300 border border-amber-600/80 px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold animate-pulse">
+                <span>🔆</span> 画面スリープ防止中
+              </span>
+            </div>
           </div>
 
           <!-- スコアカードグリッド -->

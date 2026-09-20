@@ -424,6 +424,92 @@ createApp({
       return list.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja')) || null;
     };
 
+    // ==========================================
+    // 🔆 画面スリープ・タイムアウト防止（Wake Lock API ＆ キープアライブ）
+    // ==========================================
+    const isWakeLockSupported = ref(typeof navigator !== 'undefined' && 'wakeLock' in navigator);
+    const isWakeLockActive = ref(false);
+    const wakeLockManualOverride = ref(false); // 手動での常時ON
+    let wakeLockSentinel = null;
+    let silentAudioEl = null;
+
+    // iOS/Android共通の無音オーディオ初期化（メディア再生中フラグでバックグラウンド維持）
+    const initSilentAudio = () => {
+      if (silentAudioEl) return;
+      try {
+        silentAudioEl = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        silentAudioEl.loop = true;
+        silentAudioEl.setAttribute('playsinline', '');
+        silentAudioEl.setAttribute('webkit-playsinline', '');
+        silentAudioEl.volume = 0.001;
+      } catch (e) {}
+    };
+
+    const acquireWakeLock = async () => {
+      initSilentAudio();
+      if (silentAudioEl) {
+        try {
+          silentAudioEl.play().catch(() => {});
+        } catch (e) {}
+      }
+
+      if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+        try {
+          if (!wakeLockSentinel) {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            isWakeLockActive.value = true;
+            wakeLockSentinel.addEventListener('release', () => {
+              wakeLockSentinel = null;
+              if (!wakeLockManualOverride.value && !isAutoPlay.value && !isReviewAutoPlay.value) {
+                isWakeLockActive.value = false;
+              }
+            });
+          }
+        } catch (err) {
+          console.log('[WakeLock] Request notice:', err);
+        }
+      }
+      isWakeLockActive.value = true; // オーディオキープアライブまたはWakeLock動作中
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLockManualOverride.value) return; // 手動常時ONの場合は解除しない
+      if (silentAudioEl) {
+        try {
+          silentAudioEl.pause();
+        } catch (e) {}
+      }
+      if (wakeLockSentinel) {
+        try {
+          await wakeLockSentinel.release();
+        } catch (e) {}
+        wakeLockSentinel = null;
+      }
+      isWakeLockActive.value = false;
+    };
+
+    const toggleManualWakeLock = async () => {
+      wakeLockManualOverride.value = !wakeLockManualOverride.value;
+      if (wakeLockManualOverride.value) {
+        await acquireWakeLock();
+      } else {
+        if (!isAutoPlay.value && !isReviewAutoPlay.value) {
+          await releaseWakeLock();
+        }
+      }
+    };
+
+    // 画面復帰時の自動再取得
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+          if (wakeLockManualOverride.value || isAutoPlay.value || isReviewAutoPlay.value) {
+            await acquireWakeLock();
+          }
+        }
+      });
+    }
+
     const stopSpeech = () => {
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
@@ -439,6 +525,7 @@ createApp({
       isSpeaking.value = false;
       isAutoPlay.value = false;
       isReviewAutoPlay.value = false;
+      releaseWakeLock();
     };
 
     const speakText = (text, onEndCallback = null) => {
@@ -510,12 +597,13 @@ createApp({
     };
 
     // 🚗 車両通勤・ハンズフリー自動連続耳学モード
-    const toggleAutoPlay = () => {
+    const toggleAutoPlay = async () => {
       if (isAutoPlay.value) {
         stopSpeech();
       } else {
         stopSpeech();
         isAutoPlay.value = true;
+        await acquireWakeLock();
         playWordAutoCycle();
       }
     };
@@ -576,12 +664,13 @@ createApp({
     };
 
     // 🚗 振り返り画面での「連続耳学モード（音声解説リスニング）」
-    const toggleReviewAutoPlay = () => {
+    const toggleReviewAutoPlay = async () => {
       if (isReviewAutoPlay.value) {
         stopSpeech();
       } else {
         stopSpeech();
         isReviewAutoPlay.value = true;
+        await acquireWakeLock();
         currentReviewSpeechIndex.value = 0;
         playReviewAutoCycle();
       }
@@ -1276,7 +1365,13 @@ createApp({
       // PWA & Mobile
       isInstallable,
       triggerInstall,
-      isOnline
+      isOnline,
+
+      // Screen Wake Lock & Keepalive
+      isWakeLockSupported,
+      isWakeLockActive,
+      wakeLockManualOverride,
+      toggleManualWakeLock
     };
   }
 }).mount('#app');
