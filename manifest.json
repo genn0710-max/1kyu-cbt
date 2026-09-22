@@ -2,7 +2,7 @@
   "name": "1級建築施工管理技士補 CBT即解＆実戦シミュレーション",
   "short_name": "1級技士補CBT",
   "description": "本試験仕様600問＆即解ワード暗記・耳学モード搭載",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",

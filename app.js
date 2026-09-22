@@ -54,6 +54,49 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
+    // ==========================================
+    // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
+    // ==========================================
+    const VALID_PASSCODES = ['2026', 'cbt2026', '1985', '7777', 'kentiku'];
+    const isAuthorized = ref(localStorage.getItem('cbt_authorized') === 'true');
+    const authPasscode = ref('');
+    const authError = ref('');
+    const authSuccessMsg = ref('');
+
+    const maskUrlAndHistory = () => {
+      try {
+        if (window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname.replace(/\/index\.html$/, '/') || './';
+          window.history.replaceState(null, document.title, cleanUrl);
+        }
+      } catch (e) {
+        console.warn('[Security] history mask error:', e);
+      }
+    };
+
+    const verifyAuth = () => {
+      authError.value = '';
+      authSuccessMsg.value = '';
+      const input = authPasscode.value.trim().toLowerCase();
+      if (VALID_PASSCODES.includes(input)) {
+        isAuthorized.value = true;
+        localStorage.setItem('cbt_authorized', 'true');
+        authSuccessMsg.value = '認証に成功しました。アプリを起動します...';
+        maskUrlAndHistory();
+      } else {
+        authError.value = '合言葉（パスコード）が正しくありません。管理者にお問い合わせください。';
+      }
+    };
+
+    const lockApp = () => {
+      if (confirm('アプリをロックしますか？ 次回起動時に再度合言葉が必要になります。')) {
+        localStorage.removeItem('cbt_authorized');
+        isAuthorized.value = false;
+        authPasscode.value = '';
+        authError.value = '';
+      }
+    };
+
     const activeTab = ref('exam'); // 'exam' | 'words' | 'quiz' | 'cheatsheet' | 'manage'
     const allQuestions = ref([]);
     const totalQuestionsCount = computed(() => allQuestions.value.length);
@@ -507,13 +550,13 @@ createApp({
       speakText('音声テストです。正常に読み上げが行われています。マナーモードがオフになっていることをご確認ください。');
     };
 
-    // 🔄 アプリ最新版更新（キャッシュパージ＆リロード）
+    // 🔄 アプリ最新版更新（キャッシュ完全パージ＆強制最新化）
     const reloadApp = async () => {
       try {
         if ('serviceWorker' in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
           for (const reg of regs) {
-            await reg.update();
+            await reg.unregister();
           }
         }
         if ('caches' in window) {
@@ -526,7 +569,8 @@ createApp({
         console.warn('Cache purge notice:', e);
       }
       // キャッシュバスター付きリロード
-      window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
+      const base = window.location.href.split('?')[0].split('#')[0];
+      window.location.href = base + '?t=' + Date.now();
     };
 
     const speakText = (text, onEndCallback = null) => {
@@ -1251,6 +1295,7 @@ createApp({
     };
 
     onMounted(async () => {
+      maskUrlAndHistory();
       try {
         const cached = await getAllFromDB();
         if (cached && cached.length > 0) {
@@ -1399,7 +1444,15 @@ createApp({
       testSpeech,
 
       // App Update & Reload
-      reloadApp
+      reloadApp,
+
+      // Security & Authorization
+      isAuthorized,
+      authPasscode,
+      authError,
+      authSuccessMsg,
+      verifyAuth,
+      lockApp
     };
   }
 }).mount('#app');
