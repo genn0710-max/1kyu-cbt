@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.3-speech-sync';
+const CACHE_NAME = 'cbt-arch-v2.4-kutai-pronounce';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

@@ -330,6 +330,8 @@ createApp({
       s = s.replace(/(\d+(\.\d+)?)\s*m(?![a-zA-Z])/g, "$1メートル");
 
       // 4. 専門用語・法令・誤読防止辞書
+      s = s.replace(/躯体/g, "くたい");
+      s = s.replace(/仕上/g, "しあげ");
       s = s.replace(/36協定/g, "サブロク協定");
       s = s.replace(/せき板/g, "せきいた");
       s = s.replace(/建地/g, "たてじ");
