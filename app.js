@@ -507,6 +507,28 @@ createApp({
       speakText('音声テストです。正常に読み上げが行われています。マナーモードがオフになっていることをご確認ください。');
     };
 
+    // 🔄 アプリ最新版更新（キャッシュパージ＆リロード）
+    const reloadApp = async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const reg of regs) {
+            await reg.update();
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+          }
+        }
+      } catch (e) {
+        console.warn('Cache purge notice:', e);
+      }
+      // キャッシュバスター付きリロード
+      window.location.href = window.location.origin + window.location.pathname + '?v=' + Date.now();
+    };
+
     const speakText = (text, onEndCallback = null) => {
       if (!isSpeechSupported.value || !window.speechSynthesis) {
         if (onEndCallback) onEndCallback();
@@ -1374,7 +1396,10 @@ createApp({
       isWakeLockActive,
       wakeLockManualOverride,
       toggleManualWakeLock,
-      testSpeech
+      testSpeech,
+
+      // App Update & Reload
+      reloadApp
     };
   }
 }).mount('#app');

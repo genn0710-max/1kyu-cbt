@@ -57,7 +57,7 @@
           <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
           <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">600問問題集 ＆ 実戦シミュレーション</h1>
           <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-            ✨ 最新 v2.1 (iPhone/Android・オフライン完全対応版)
+            ✨ 最新 v2.4 (「躯体」くたい発音・更新ボタン対応版)
           </span>
           <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
             DBプール: {{ totalQuestionsCount }} 問
@@ -77,6 +77,14 @@
             :title="isWakeLockActive ? '画面スリープ防止が作動中です（無操作でも消灯しません）' : 'タップで画面スリープ防止をONにします'">
             <span>🔆</span>
             <span>{{ isWakeLockActive ? 'スリープ防止: ON' : 'スリープ防止: OFF' }}</span>
+          </button>
+          <!-- 🔄 アプリ更新・再読み込みボタン -->
+          <button 
+            @click="reloadApp" 
+            class="text-[11px] bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/80 px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all select-none cursor-pointer active:scale-95 shadow-sm"
+            title="最新版にキャッシュ更新して再読み込みします">
+            <span>🔄</span>
+            <span>最新版に更新</span>
           </button>
         </div>
         <p class="text-xs text-slate-400 mt-1">10分スキマ実戦 × 20分濃縮解説（現場知見付） × 72文本番模試 × 工種別演習</p>
