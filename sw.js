@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.5-security-auth';
+const CACHE_NAME = 'cbt-arch-v2.6-safe-area';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

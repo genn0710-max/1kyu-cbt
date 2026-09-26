@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>【最新v2.5】1級建築施工管理技士補 600問バンク ＆ 実戦シミュレーション</title>
+  <title>【最新v2.6】1級建築施工管理技士補 600問バンク ＆ 実戦シミュレーション</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -43,6 +43,30 @@
   </script>
   <style>
     [v-cloak] { display: none; }
+
+    /* 📱 スマホ最上部（ステータスバー・ノッチ・Dynamic Island）＆最下部セーフエリア対応 */
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+    
+    body {
+      background-color: #020617;
+      /* 横向き時の左右セーフエリア余白 */
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    #app {
+      /* 時計・バッテリー・Dynamic Island・カメラノッチとヘッダーが被らないよう十分な上部余白を確保 */
+      padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.75rem)) !important;
+      padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem)) !important;
+      padding-left: max(0.75rem, calc(env(safe-area-inset-left, 0px) + 0.75rem)) !important;
+      padding-right: max(0.75rem, calc(env(safe-area-inset-right, 0px) + 0.75rem)) !important;
+    }
+
     .timer-bar {
       transition: width 0.25s linear, background-color 0.3s ease;
     }
@@ -113,7 +137,7 @@
             <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
             <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">600問問題集 ＆ 実戦シミュレーション</h1>
             <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-              ✨ 最新 v2.5 (限定試用セキュリティ・URLマスク版)
+              ✨ 最新 v2.6 (Dynamic Island・セーフエリア対応版)
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               DBプール: {{ totalQuestionsCount }} 問
