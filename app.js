@@ -984,18 +984,123 @@ createApp({
       return stats;
     });
 
+    // ==========================================
+    // 💥 誤答・要復習確認 ＆ 再試験システム
+    // ==========================================
+    const examReviewFilter = ref('wrong'); // 'wrong' | 'marked' | 'all'
+
+    // 誤答問題リスト
     const examWrongQuestions = computed(() => {
       const list = [];
       examQuestions.value.forEach((q, idx) => {
         if (examUserAnswers.value[idx] !== q.correctIndex) {
           list.push({
             q,
-            userAnswer: examUserAnswers.value[idx]
+            userAnswer: examUserAnswers.value[idx],
+            isCorrect: false,
+            isMarked: !!examMarks.value[idx],
+            idx
           });
         }
       });
       return list;
     });
+
+    // 要復習マーク付き問題リスト
+    const examMarkedQuestions = computed(() => {
+      const list = [];
+      examQuestions.value.forEach((q, idx) => {
+        if (examMarks.value[idx]) {
+          list.push({
+            q,
+            userAnswer: examUserAnswers.value[idx],
+            isCorrect: examUserAnswers.value[idx] === q.correctIndex,
+            isMarked: true,
+            idx
+          });
+        }
+      });
+      return list;
+    });
+
+    // フィルター適用後の確認リスト
+    const filteredExamReviewList = computed(() => {
+      if (examReviewFilter.value === 'marked') {
+        return examMarkedQuestions.value;
+      }
+      if (examReviewFilter.value === 'all') {
+        return examQuestions.value.map((q, idx) => ({
+          q,
+          userAnswer: examUserAnswers.value[idx],
+          isCorrect: examUserAnswers.value[idx] === q.correctIndex,
+          isMarked: !!examMarks.value[idx],
+          idx
+        }));
+      }
+      return examWrongQuestions.value;
+    });
+
+    // 誤答または要復習の再試験開始
+    const startRetryExam = (type = 'wrong') => {
+      const pool = [];
+      const seenIds = new Set();
+
+      examQuestions.value.forEach((q, idx) => {
+        const isWrong = examUserAnswers.value[idx] !== q.correctIndex;
+        const isMarked = !!examMarks.value[idx];
+        const shouldInclude = (type === 'wrong') ? isWrong : (isWrong || isMarked);
+
+        if (shouldInclude && !seenIds.has(q.id)) {
+          seenIds.add(q.id);
+          pool.push(q);
+        }
+      });
+
+      if (pool.length === 0) {
+        alert('再試験の対象となる問題がありません。全問正解・復習完了です！🎉');
+        return;
+      }
+
+      // 再試験モードを起動
+      examQuestions.value = pool;
+      examUserAnswers.value = {};
+      examMarks.value = {};
+      for (let i = 0; i < pool.length; i++) {
+        examUserAnswers.value[i] = null;
+        examMarks.value[i] = false;
+      }
+
+      currentExamIndex.value = 0;
+      examTimeRemaining.value = pool.length * 90; // 1問あたり90秒
+      isExamStarted.value = true;
+      isExamFinished.value = false;
+
+      clearInterval(examTimerInterval);
+      examTimerInterval = setInterval(() => {
+        if (examTimeRemaining.value > 0) {
+          examTimeRemaining.value--;
+        } else {
+          finishExam();
+        }
+      }, 1000);
+    };
+
+    // 同一設定での最初からのフル再試験
+    const restartCurrentExam = () => {
+      startSpecificExam(selectedExamMode.value);
+    };
+
+    // 個別問題のブックマーク切り替え（結果画面用）
+    const toggleQuestionBookmark = async (q) => {
+      q.isBookmarked = !q.isBookmarked;
+      const target = allQuestions.value.find(item => item.id === q.id);
+      if (target) {
+        target.isBookmarked = q.isBookmarked;
+      }
+      try {
+        await saveAllToDB(allQuestions.value);
+      } catch (e) {}
+    };
 
     // ==========================================
     // ⏱️ 工種別・章別ドリル演習（40秒タイマー）
@@ -1431,6 +1536,12 @@ createApp({
       examScoreRate,
       examCategoryStats,
       examWrongQuestions,
+      examMarkedQuestions,
+      examReviewFilter,
+      filteredExamReviewList,
+      startRetryExam,
+      restartCurrentExam,
+      toggleQuestionBookmark,
 
       // Quiz
       quizFilterChapter,

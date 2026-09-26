@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>【最新v2.8】1級建築施工管理技士補 精選問題バンク ＆ 実戦シミュレーション</title>
+  <title>【最新v2.9】1級建築施工管理技士補 精選問題バンク ＆ 実戦シミュレーション</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -137,7 +137,7 @@
             <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
             <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">精選問題集 ＆ 実戦シミュレーション</h1>
             <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-              ✨ 最新 v2.8 (全問4肢独立・選択肢＆問題重複ゼロ完全保証版)
+              ✨ 最新 v2.9 (誤答・要復習確認＆ワンタップ再試験対応版)
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               DBプール: {{ totalQuestionsCount }} 問
@@ -457,39 +457,77 @@
         </div>
 
         <!-- 採点結果レポート画面 -->
-        <div v-else-if="isExamFinished" class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <!-- 試験結果画面 -->
+        <div v-else-if="isExamFinished" class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl">
           
-          <div class="text-center pb-6 border-b border-slate-800">
+          <div class="text-center pb-5 border-b border-slate-800">
             <span class="text-xs font-mono px-3 py-1 rounded-full border mb-2 inline-block"
                   :class="selectedExamMode === 'speed10' ? 'bg-sky-950 border-sky-800 text-sky-300' : selectedExamMode === 'intensive20' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' : 'bg-indigo-950 border-indigo-800 text-indigo-300'">
               {{ getExamModeTitle() }}
             </span>
-            <h2 class="text-2xl font-bold text-white mb-2">採点結果レポート</h2>
+            <h2 class="text-xl md:text-2xl font-bold text-white mb-2">採点結果レポート</h2>
             
-            <div class="flex items-center justify-center gap-8 mt-4">
+            <div class="flex items-center justify-center gap-6 md:gap-10 mt-3">
               <div>
                 <span class="text-xs text-slate-400 block">総合スコア</span>
-                <span class="text-4xl font-extrabold" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-amber-400'">
-                  {{ examScore }} <span class="text-lg font-normal text-slate-400">/ {{ examQuestions.length }}</span>
+                <span class="text-3xl md:text-4xl font-extrabold" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-amber-400'">
+                  {{ examScore }} <span class="text-base md:text-lg font-normal text-slate-400">/ {{ examQuestions.length }}</span>
                 </span>
               </div>
-              <div class="border-l border-slate-800 pl-8 text-left">
+              <div class="border-l border-slate-800 pl-6 md:pl-10 text-left">
                 <span class="text-xs text-slate-400 block">正答率</span>
-                <span class="text-3xl font-bold" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-rose-400'">
+                <span class="text-2xl md:text-3xl font-bold" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-rose-400'">
                   {{ examScoreRate.toFixed(1) }}%
                 </span>
-                <span class="text-xs block mt-0.5" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-rose-400'">
+                <span class="text-xs block mt-0.5 font-medium" :class="examScoreRate >= 60 ? 'text-emerald-400' : 'text-rose-400'">
                   {{ examScoreRate >= 60 ? '🎉 1級技士補 合格ライン（60%以上）クリア！' : '⚠️ 合格ライン（60%）まであと少し！' }}
                 </span>
               </div>
             </div>
+
+            <!-- 🚀 アクションボタン群（再試験・モード復帰） -->
+            <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+              <!-- 誤答のみで再試験 -->
+              <button 
+                v-if="examWrongQuestions.length > 0"
+                @click="startRetryExam('wrong')"
+                class="bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 active:scale-95 text-white font-bold text-xs md:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-rose-600/20 flex items-center gap-2 transition-all cursor-pointer">
+                <span>🔥</span>
+                <span>誤答問題だけで再試験 ({{ examWrongQuestions.length }}問)</span>
+              </button>
+
+              <!-- 要復習マーク付きも含めて再試験 -->
+              <button 
+                v-if="examMarkedQuestions.length > 0"
+                @click="startRetryExam('all_retry')"
+                class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 active:scale-95 text-slate-950 font-bold text-xs md:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-amber-600/20 flex items-center gap-2 transition-all cursor-pointer">
+                <span>🚩</span>
+                <span>要復習・マーク問題も含めて再試験</span>
+              </button>
+
+              <!-- 同じ条件で最初から再試験 -->
+              <button 
+                @click="restartCurrentExam"
+                class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs md:text-sm px-3.5 py-2.5 rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer">
+                <span>🔄</span>
+                <span>最初から再試験</span>
+              </button>
+
+              <!-- モード選択に戻る -->
+              <button 
+                @click="resetExamState" 
+                class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs md:text-sm px-3.5 py-2.5 rounded-xl border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer">
+                <span>🏠</span>
+                <span>モード選択に戻る</span>
+              </button>
+            </div>
           </div>
 
           <!-- 分野別正答率内訳 -->
-          <div class="my-5">
-            <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider">工種・分野別 正答率</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              <div v-for="(stat, cat) in examCategoryStats" :key="cat" class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div class="my-4">
+            <h3 class="text-xs font-bold text-slate-300 mb-2.5 uppercase tracking-wider">工種・分野別 正答率</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              <div v-for="(stat, cat) in examCategoryStats" :key="cat" class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                 <div class="flex justify-between items-center text-xs mb-1">
                   <span class="text-slate-300 truncate font-medium">{{ cat }}</span>
                   <span class="font-mono font-bold" :class="stat.rate >= 60 ? 'text-emerald-400' : 'text-amber-400'">
@@ -503,28 +541,143 @@
             </div>
           </div>
 
-          <!-- 誤答・引っ掛かり問題の復習 -->
-          <div class="flex-1 border-t border-slate-800 pt-4">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                <span>💥</span> 誤答・要復習問題の確認 ({{ examWrongQuestions.length }}問)
-              </h3>
-              <button @click="resetExamState" class="text-xs bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl shadow">
-                モード選択に戻る
-              </button>
+          <!-- 💥 誤答・要復習問題の確認セクション -->
+          <div class="flex-1 border-t border-slate-800 pt-4 flex flex-col">
+            <!-- フィルタタブ切り替え -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+              <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                <button 
+                  @click="examReviewFilter = 'wrong'"
+                  :class="examReviewFilter === 'wrong' ? 'bg-rose-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                  <span>💥</span> 誤答・未解答 ({{ examWrongQuestions.length }}問)
+                </button>
+                <button 
+                  @click="examReviewFilter = 'marked'"
+                  :class="examReviewFilter === 'marked' ? 'bg-amber-500 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                  <span>🚩</span> 要復習マーク ({{ examMarkedQuestions.length }}問)
+                </button>
+                <button 
+                  @click="examReviewFilter = 'all'"
+                  :class="examReviewFilter === 'all' ? 'bg-indigo-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
+                  <span>📋</span> 全問題 ({{ examQuestions.length }}問)
+                </button>
+              </div>
+
+              <div class="text-xs text-slate-400 flex items-center gap-2">
+                <span>表示中: <strong class="text-white">{{ filteredExamReviewList.length }}</strong> 問</span>
+              </div>
             </div>
 
-            <div class="space-y-3 max-h-[450px] overflow-y-auto pr-2">
-              <div v-for="item in examWrongQuestions" :key="item.q.id" class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{{ item.q.chapterName || item.q.category }}</span>
-                  <span class="text-rose-400 font-mono">あなたの回答: {{ item.userAnswer !== null ? item.userAnswer + 1 : '未解答' }} / 正解: {{ item.q.correctIndex + 1 }}</span>
+            <!-- 全問正解時の祝賀バナー -->
+            <div v-if="filteredExamReviewList.length === 0 && examReviewFilter === 'wrong'" class="bg-emerald-950/40 border border-emerald-600/50 rounded-2xl p-6 text-center my-4">
+              <div class="text-4xl mb-2">🎉</div>
+              <h4 class="text-base font-bold text-emerald-300 mb-1">素晴らしい！誤答問題はありません！</h4>
+              <p class="text-xs text-slate-300">本試験の全出題に対して完璧な解答ができています。この調子で合格を確実にしましょう！</p>
+            </div>
+
+            <!-- 問題リスト詳細表示（選択肢・正解根拠・引っ掛け罠つき） -->
+            <div v-else class="space-y-4 max-h-[550px] overflow-y-auto pr-1 sm:pr-2">
+              <div 
+                v-for="item in filteredExamReviewList" 
+                :key="item.q.id" 
+                class="bg-slate-950 p-4 rounded-xl border transition-all text-xs"
+                :class="item.isCorrect ? 'border-slate-800' : 'border-rose-900/60 shadow-md shadow-rose-950/20'">
+                
+                <!-- ヘッダー行（章名・正誤バッジ・ブックマーク） -->
+                <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-medium">
+                      {{ item.q.chapterName || item.q.category }}
+                    </span>
+                    <span 
+                      v-if="item.isCorrect" 
+                      class="bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                      <span>⭕</span> 正解
+                    </span>
+                    <span 
+                      v-else-if="item.userAnswer === null" 
+                      class="bg-slate-800 text-amber-300 border border-amber-700/60 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                      <span>⚠️</span> 未解答
+                    </span>
+                    <span 
+                      v-else 
+                      class="bg-rose-950 text-rose-300 border border-rose-700/60 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                      <span>❌</span> 不正解
+                    </span>
+
+                    <span v-if="item.isMarked" class="bg-amber-950 text-amber-300 border border-amber-600/60 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 text-[11px]">
+                      <span>🚩</span> 要復習
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <span class="text-slate-400 font-mono text-[11px]">
+                      あなたの回答: <strong :class="item.isCorrect ? 'text-emerald-400' : 'text-rose-400'">{{ item.userAnswer !== null ? item.userAnswer + 1 : '未' }}</strong>
+                      / 正解: <strong class="text-emerald-400">{{ item.q.correctIndex + 1 }}</strong>
+                    </span>
+                    <!-- ブックマークトグル -->
+                    <button 
+                      @click="toggleQuestionBookmark(item.q)"
+                      class="text-sm transition-transform active:scale-90"
+                      :title="item.q.isBookmarked ? 'しおりを外す' : 'しおりに追加'">
+                      <span>{{ item.q.isBookmarked ? '⭐' : '☆' }}</span>
+                    </button>
+                  </div>
                 </div>
-                <p class="font-semibold text-slate-200 mb-2">{{ item.q.question }}</p>
-                <div class="bg-amber-950/30 border border-amber-600/40 p-2.5 rounded-lg text-amber-200 mb-2 whitespace-pre-wrap">
+
+                <!-- 問題文 -->
+                <p class="font-bold text-slate-100 text-sm mb-3 leading-relaxed">
+                  {{ item.q.question }}
+                </p>
+
+                <!-- 4つの選択肢一覧（自分の回答と正解を明確に色分け） -->
+                <div class="space-y-1.5 mb-3">
+                  <div 
+                    v-for="(opt, optIdx) in item.q.options" 
+                    :key="optIdx"
+                    class="p-2.5 rounded-lg border text-xs flex items-start gap-2.5 transition-colors"
+                    :class="[
+                      optIdx === item.q.correctIndex 
+                        ? 'bg-emerald-950/40 border-emerald-500/70 text-emerald-200 font-semibold' 
+                        : (optIdx === item.userAnswer && !item.isCorrect 
+                            ? 'bg-rose-950/40 border-rose-500/70 text-rose-200 line-through' 
+                            : 'bg-slate-900/50 border-slate-800/80 text-slate-400')
+                    ]">
+                    <span 
+                      class="w-5 h-5 rounded-full flex items-center justify-center font-mono font-bold text-[11px] shrink-0"
+                      :class="optIdx === item.q.correctIndex ? 'bg-emerald-500 text-slate-950' : (optIdx === item.userAnswer && !item.isCorrect ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-400')">
+                      {{ optIdx + 1 }}
+                    </span>
+                    <span class="flex-1 leading-relaxed">{{ opt }}</span>
+                    <span v-if="optIdx === item.q.correctIndex" class="text-emerald-400 font-bold shrink-0 text-[11px]">
+                      ⭕ 正解
+                    </span>
+                    <span v-else-if="optIdx === item.userAnswer && !item.isCorrect" class="text-rose-400 font-bold shrink-0 text-[11px]">
+                      ❌ あなたの回答
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 引っ掛け罠ノート -->
+                <div v-if="item.q.trapNote" class="bg-amber-950/30 border border-amber-600/40 p-3 rounded-xl text-amber-200 mb-2 leading-relaxed whitespace-pre-wrap">
                   {{ item.q.trapNote }}
                 </div>
-                <p class="text-slate-400"><strong class="text-emerald-400">正解の根拠:</strong> {{ item.q.explanation }}</p>
+
+                <!-- 正解根拠 & 現場知見 -->
+                <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl space-y-2 text-slate-300">
+                  <p class="leading-relaxed">
+                    <strong class="text-emerald-400 font-semibold block mb-1">💡 正解の論理・根拠法令:</strong>
+                    {{ item.q.explanation }}
+                  </p>
+                  <p v-if="item.q.fieldReality" class="text-slate-400 text-[11px] leading-relaxed border-t border-slate-800/80 pt-2">
+                    <strong class="text-sky-400 font-semibold block mb-0.5">📐 現場工事長の知見:</strong>
+                    {{ item.q.fieldReality }}
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>

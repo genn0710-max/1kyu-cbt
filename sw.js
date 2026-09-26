@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.8-distinct-choices';
+const CACHE_NAME = 'cbt-arch-v2.9-review-retry';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
