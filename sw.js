@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.6-safe-area';
+const CACHE_NAME = 'cbt-arch-v2.7-unique-questions';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

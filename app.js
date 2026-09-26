@@ -1,6 +1,6 @@
 const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
 
-const DB_NAME = 'ArchConstructionCBT_DB_v2';
+const DB_NAME = 'ArchConstructionCBT_DB_v3';
 const DB_VERSION = 1;
 const STORE_NAME = 'questions';
 
@@ -565,6 +565,10 @@ createApp({
             await caches.delete(key);
           }
         }
+        if (typeof indexedDB !== 'undefined') {
+          indexedDB.deleteDatabase('ArchConstructionCBT_DB_v2');
+          indexedDB.deleteDatabase('ArchConstructionCBT_DB_v3');
+        }
       } catch (e) {
         console.warn('Cache purge notice:', e);
       }
@@ -819,9 +823,26 @@ createApp({
         durationSeconds = 1200; // 20分
       }
 
-      // ランダム抽出
+      // 【重複防止】1試験内での同一問題・類似問題の重複出題を100%完全排除
       const shuffled = [...allQuestions.value].sort(() => 0.5 - Math.random());
-      examQuestions.value = shuffled.slice(0, Math.min(targetCount, shuffled.length));
+      const selected = [];
+      const seenSignatures = new Set();
+
+      for (const q of shuffled) {
+        // 重複判定シグネチャ：解説文または問題文＋正解選択肢（実質同一問題判定）
+        const corrText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
+        const sig = (q.explanation || (q.question + '::' + corrText)).trim();
+
+        if (!seenSignatures.has(sig) && !seenSignatures.has(q.id)) {
+          seenSignatures.add(sig);
+          seenSignatures.add(q.id);
+          selected.push(q);
+          if (selected.length >= targetCount) {
+            break;
+          }
+        }
+      }
+      examQuestions.value = selected;
 
       examUserAnswers.value = {};
       examMarks.value = {};
@@ -996,10 +1017,24 @@ createApp({
       if (quizOnlyBookmarked.value) {
         list = list.filter(q => q.isBookmarked);
       }
-      if (quizRandomOrder.value) {
-        list = [...list].sort(() => 0.5 - Math.random());
+
+      // 重複排除（同一問題の多重出題を防止）
+      const seen = new Set();
+      const uniqueList = [];
+      for (const q of list) {
+        const corrText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
+        const sig = (q.explanation || (q.question + '::' + corrText)).trim();
+        if (!seen.has(sig) && !seen.has(q.id)) {
+          seen.add(sig);
+          seen.add(q.id);
+          uniqueList.push(q);
+        }
       }
-      return list;
+
+      if (quizRandomOrder.value) {
+        return [...uniqueList].sort(() => 0.5 - Math.random());
+      }
+      return uniqueList;
     });
 
     const currentQuestion = computed(() => {
@@ -1298,7 +1333,9 @@ createApp({
       maskUrlAndHistory();
       try {
         const cached = await getAllFromDB();
-        if (cached && cached.length > 0) {
+        // キャッシュが存在し、かつ最新の問題バンク件数と一致していればキャッシュを使用。
+        // 件数が異なる場合やキャッシュが空の場合は最新バンクでIndexedDBを更新・初期化。
+        if (cached && cached.length > 0 && window.QUESTIONS_BANK && cached.length === window.QUESTIONS_BANK.length) {
           allQuestions.value = cached;
         } else if (window.QUESTIONS_BANK && window.QUESTIONS_BANK.length > 0) {
           allQuestions.value = window.QUESTIONS_BANK;
