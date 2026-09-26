@@ -1,6 +1,6 @@
 const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
 
-const DB_NAME = 'ArchConstructionCBT_DB_v3';
+const DB_NAME = 'ArchConstructionCBT_DB_v4';
 const DB_VERSION = 1;
 const STORE_NAME = 'questions';
 
@@ -568,6 +568,7 @@ createApp({
         if (typeof indexedDB !== 'undefined') {
           indexedDB.deleteDatabase('ArchConstructionCBT_DB_v2');
           indexedDB.deleteDatabase('ArchConstructionCBT_DB_v3');
+          indexedDB.deleteDatabase('ArchConstructionCBT_DB_v4');
         }
       } catch (e) {
         console.warn('Cache purge notice:', e);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.7-unique-questions';
+const CACHE_NAME = 'cbt-arch-v2.8-distinct-choices';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
