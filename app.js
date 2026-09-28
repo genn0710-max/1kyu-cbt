@@ -324,13 +324,26 @@ createApp({
     // ==========================================
     const isSpeechSupported = ref('speechSynthesis' in window);
     const isSpeaking = ref(false);
-    const isAutoPlay = ref(false); // 車両通勤・自動連続耳学モード
-    const isReviewAutoPlay = ref(false); // 振り返り耳学モード
+    const isAutoPlay = ref(false); // 車両通勤・即解ワード自動連続耳学モード
+    const isReviewAutoPlay = ref(false); // 即解ワード振り返り耳学モード
     const currentReviewSpeechIndex = ref(0);
+
+    // 🎧 全モード聞き流し・耳学ステート
+    const isExamAutoPlay = ref(false); // 実戦テスト進行中聞き流し
+    const isExamReviewAutoPlay = ref(false); // 採点結果・誤答/要復習聞き流し
+    const currentExamReviewSpeechIndex = ref(0);
+    const isQuizAutoPlay = ref(false); // 工種別演習聞き流し
+    const isCheatAutoPlay = ref(false); // 罠チートシート連続聞き流し
+    const currentCheatSpeechIndex = ref(0);
+
     const speechRate = ref(1.0); // 0.85, 1.0, 1.2, 1.4
     let currentUtterance = null;
     let autoPlayTimer = null;
     let reviewAutoTimer = null;
+    let examAutoTimer = null;
+    let examReviewAutoTimer = null;
+    let quizAutoTimer = null;
+    let cheatAutoTimer = null;
 
     // 正しい発音のためのテキスト正規化エンジン
     // 例: 「1/5」→「5分の1」（日付の1月5日と誤読させない）
@@ -426,6 +439,67 @@ createApp({
       s = s.replace(/QC/g, "キューシー");
       s = s.replace(/Fc/g, "エフシー");
       s = s.replace(/PC鋼線/g, "ピーシーこうせん");
+      s = s.replace(/PC/g, "ピーシー");
+      s = s.replace(/UCL/g, "ユーシーエル");
+      s = s.replace(/LCL/g, "エルシーエル");
+      s = s.replace(/SN材/g, "エスエヌざい");
+      s = s.replace(/SN400B/g, "エスエヌ よんひゃく ビー");
+      s = s.replace(/SN490B/g, "エスエヌ よんきゅうまる ビー");
+      s = s.replace(/合板/g, "ごうはん");
+      s = s.replace(/段葺き/g, "だんぶき");
+      s = s.replace(/葺き/g, "ふき");
+      s = s.replace(/葺く/g, "ふく");
+      s = s.replace(/瓦棒/g, "かわらぼう");
+      s = s.replace(/野地板/g, "のじいた");
+      s = s.replace(/垂木/g, "たるき");
+      s = s.replace(/棟木/g, "むなぎ");
+      s = s.replace(/胴縁/g, "どうぶち");
+      s = s.replace(/帯金物/g, "おびかなもの");
+      s = s.replace(/羽子板ボルト/g, "はごいたボルト");
+      s = s.replace(/短冊金物/g, "たんざくかなもの");
+      s = s.replace(/筋かい/g, "すじかい");
+      s = s.replace(/筋交い/g, "すじかい");
+      s = s.replace(/筋交/g, "すじかい");
+      s = s.replace(/間柱/g, "まばしら");
+      s = s.replace(/通し柱/g, "とおしばしら");
+      s = s.replace(/管柱/g, "くだばしら");
+      s = s.replace(/土台/g, "どだい");
+      s = s.replace(/布基礎/g, "ぬのきそ");
+      s = s.replace(/べた基礎/g, "べたきそ");
+      s = s.replace(/地業/g, "じぎょう");
+      s = s.replace(/床付け/g, "とこづけ");
+      s = s.replace(/根切り/g, "ねぎり");
+      s = s.replace(/埋戻し/g, "うめもどし");
+      s = s.replace(/割栗石/g, "わりぐりいし");
+      s = s.replace(/目地/g, "めじ");
+      s = s.replace(/面木/g, "めんき");
+      s = s.replace(/隅肉/g, "すみにく");
+      s = s.replace(/開先/g, "かいさき");
+      s = s.replace(/余盛り/g, "よもり");
+      s = s.replace(/余盛/g, "よもり");
+      s = s.replace(/撓み/g, "たわみ");
+      s = s.replace(/撓り/g, "しなり");
+      s = s.replace(/反り/g, "そり");
+      s = s.replace(/粗骨材/g, "そこつざい");
+      s = s.replace(/細骨材/g, "さいこつざい");
+      s = s.replace(/骨材/g, "こつざい");
+      s = s.replace(/単位水量/g, "たんいすいりょう");
+      s = s.replace(/水セメント比/g, "すいセメントひ");
+      s = s.replace(/空気量/g, "くうきりょう");
+      s = s.replace(/スランプ/g, "スランプ");
+      s = s.replace(/呼び強度/g, "よびきょうど");
+      s = s.replace(/設計基準強度/g, "せっけいきじゅんきょうど");
+      s = s.replace(/朝顔/g, "あさがお");
+      s = s.replace(/巾/g, "はば");
+      s = s.replace(/跨ぎ/g, "またぎ");
+      s = s.replace(/踏み面/g, "ふみづら");
+      s = s.replace(/蹴上げ/g, "けあげ");
+      s = s.replace(/踊場/g, "おどりば");
+      s = s.replace(/手摺/g, "てすり");
+      s = s.replace(/踊り場/g, "おどりば");
+      s = s.replace(/勾配/g, "こうばい");
+      s = s.replace(/不適当/g, "ふてきとう");
+      s = s.replace(/誤っている/g, "あやまっている");
 
       return s;
     };
@@ -474,6 +548,10 @@ createApp({
     const wakeLockManualOverride = ref(false);
     let wakeLockSentinel = null;
 
+    const isAnyAutoPlayActive = () => {
+      return isAutoPlay.value || isReviewAutoPlay.value || isExamAutoPlay.value || isExamReviewAutoPlay.value || isQuizAutoPlay.value || isCheatAutoPlay.value;
+    };
+
     const acquireWakeLock = async () => {
       if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
         try {
@@ -482,7 +560,7 @@ createApp({
             isWakeLockActive.value = true;
             wakeLockSentinel.addEventListener('release', () => {
               wakeLockSentinel = null;
-              if (!wakeLockManualOverride.value && !isAutoPlay.value && !isReviewAutoPlay.value) {
+              if (!wakeLockManualOverride.value && !isAnyAutoPlayActive()) {
                 isWakeLockActive.value = false;
               }
             });
@@ -509,7 +587,7 @@ createApp({
       if (wakeLockManualOverride.value) {
         await acquireWakeLock();
       } else {
-        if (!isAutoPlay.value && !isReviewAutoPlay.value) {
+        if (!isAnyAutoPlayActive()) {
           await releaseWakeLock();
         }
       }
@@ -519,7 +597,7 @@ createApp({
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
-          if (wakeLockManualOverride.value || isAutoPlay.value || isReviewAutoPlay.value) {
+          if (wakeLockManualOverride.value || isAnyAutoPlayActive()) {
             await acquireWakeLock();
           }
         }
@@ -538,9 +616,29 @@ createApp({
         clearTimeout(reviewAutoTimer);
         reviewAutoTimer = null;
       }
+      if (examAutoTimer) {
+        clearTimeout(examAutoTimer);
+        examAutoTimer = null;
+      }
+      if (examReviewAutoTimer) {
+        clearTimeout(examReviewAutoTimer);
+        examReviewAutoTimer = null;
+      }
+      if (quizAutoTimer) {
+        clearTimeout(quizAutoTimer);
+        quizAutoTimer = null;
+      }
+      if (cheatAutoTimer) {
+        clearTimeout(cheatAutoTimer);
+        cheatAutoTimer = null;
+      }
       isSpeaking.value = false;
       isAutoPlay.value = false;
       isReviewAutoPlay.value = false;
+      isExamAutoPlay.value = false;
+      isExamReviewAutoPlay.value = false;
+      isQuizAutoPlay.value = false;
+      isCheatAutoPlay.value = false;
       releaseWakeLock();
     };
 
@@ -889,15 +987,92 @@ createApp({
 
     const finishExam = () => {
       clearInterval(examTimerInterval);
+      if (isExamAutoPlay.value) {
+        stopSpeech();
+      }
       isExamFinished.value = true;
       isExamStarted.value = false;
     };
 
     const resetExamState = () => {
       clearInterval(examTimerInterval);
+      if (isExamAutoPlay.value || isExamReviewAutoPlay.value) {
+        stopSpeech();
+      }
       isExamStarted.value = false;
       isExamFinished.value = false;
       examQuestions.value = [];
+    };
+
+    // 🎧 実戦テスト進行中：ハンズフリー連続聞き流し耳学モード
+    const toggleExamAutoPlay = () => {
+      if (isExamAutoPlay.value) {
+        stopSpeech();
+      } else {
+        stopSpeech();
+        isExamAutoPlay.value = true;
+        acquireWakeLock().catch(() => {});
+        playExamAutoCycle();
+      }
+    };
+
+    const playExamAutoCycle = () => {
+      if (!isExamAutoPlay.value || !isExamStarted.value || isExamFinished.value) {
+        isExamAutoPlay.value = false;
+        return;
+      }
+
+      const q = currentExamQuestion.value;
+      if (!q || !q.question) return;
+
+      const qNum = currentExamIndex.value + 1;
+      const cat = q.chapterName || q.category || '';
+      const opts = q.options || [];
+
+      // 1. 問題文と選択肢の読み上げ
+      let speech = `第${qNum}問。${cat}。問題。${q.question}。`;
+      opts.forEach((opt, i) => {
+        speech += `選択肢${i + 1}番、${opt}。`;
+      });
+
+      speakText(speech, () => {
+        if (!isExamAutoPlay.value) return;
+
+        // 2. シンキングタイム（2.5秒）
+        examAutoTimer = setTimeout(() => {
+          if (!isExamAutoPlay.value) return;
+
+          // 画面上の回答を正解選択肢にセットして視覚的に反映
+          examUserAnswers.value[currentExamIndex.value] = q.correctIndex;
+
+          // 3. 正解・解説・引っ掛け罠・現場知見の読み上げ（不適当な理由のフィードバック明示）
+          const chosenOpt = opts[q.correctIndex] || '';
+          const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
+          const trapText = q.trapNote ? `出題者の引っ掛け罠、${q.trapNote}。` : '';
+          const fieldText = q.fieldReality ? `現場工事長の知見、${q.fieldReality}。` : '';
+          const answerSpeech = `最も不適当な正解肢は、${q.correctIndex + 1}番です。「${chosenOpt}」という記述が不適当です。${expText}${trapText}${fieldText}`;
+
+          speakText(answerSpeech, () => {
+            if (!isExamAutoPlay.value) return;
+
+            // 4. 少し間を置いて次の問題へ
+            examAutoTimer = setTimeout(() => {
+              if (!isExamAutoPlay.value) return;
+
+              if (currentExamIndex.value < examQuestions.value.length - 1) {
+                nextExamQuestion();
+                playExamAutoCycle();
+              } else {
+                // テスト全問終了
+                isExamAutoPlay.value = false;
+                speakText('実戦テストの全問聞き流しが完了しました。採点結果画面へ移行します。', () => {
+                  finishExam();
+                });
+              }
+            }, 1800);
+          });
+        }, 2500);
+      });
     };
 
     const formatExamTime = (sec) => {
@@ -1102,6 +1277,58 @@ createApp({
       } catch (e) {}
     };
 
+    // 🎧 採点結果画面：誤答・要復習の連続聞き流し耳学モード
+    const toggleExamReviewAutoPlay = () => {
+      if (isExamReviewAutoPlay.value) {
+        stopSpeech();
+      } else {
+        stopSpeech();
+        if (filteredExamReviewList.value.length === 0) {
+          speakText('確認対象の問題がありません。');
+          return;
+        }
+        isExamReviewAutoPlay.value = true;
+        currentExamReviewSpeechIndex.value = 0;
+        acquireWakeLock().catch(() => {});
+        playExamReviewAutoCycle();
+      }
+    };
+
+    const playExamReviewAutoCycle = () => {
+      const list = filteredExamReviewList.value;
+      if (!isExamReviewAutoPlay.value || list.length === 0 || currentExamReviewSpeechIndex.value >= list.length) {
+        isExamReviewAutoPlay.value = false;
+        speakText('復習対象の問題の聞き流しがすべて完了しました。大変お疲れ様でした。');
+        return;
+      }
+
+      const item = list[currentExamReviewSpeechIndex.value];
+      const q = item.q;
+      const num = currentExamReviewSpeechIndex.value + 1;
+      const statusText = item.isCorrect ? '正解した問題です。' : '見直しが必要な問題です。';
+      const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
+      const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
+      const trapText = q.trapNote ? `出題者の引っ掛け罠、${q.trapNote}。` : '';
+      const fieldText = q.fieldReality ? `現場工事長の知見、${q.fieldReality}。` : '';
+
+      const reviewSpeech = `復習第${num}問。${cat}。${statusText}問題。${q.question}。最も不適当な正解肢は、肢${q.correctIndex + 1}番です。「${correctOptText}」という記述が不適当です。${expText}${trapText}${fieldText}`;
+
+      speakText(reviewSpeech, () => {
+        if (!isExamReviewAutoPlay.value) return;
+
+        examReviewAutoTimer = setTimeout(() => {
+          if (!isExamReviewAutoPlay.value) return;
+          currentExamReviewSpeechIndex.value++;
+          if (currentExamReviewSpeechIndex.value < list.length) {
+            playExamReviewAutoCycle();
+          } else {
+            isExamReviewAutoPlay.value = false;
+            speakText('復習対象の問題の聞き流しがすべて完了しました。');
+          }
+        }, 1600);
+      });
+    };
+
     // ==========================================
     // ⏱️ 工種別・章別ドリル演習（40秒タイマー）
     // ==========================================
@@ -1242,6 +1469,82 @@ createApp({
       saveAllToDB(allQuestions.value);
     };
 
+    // 🎧 工種別ドリル演習：ハンズフリー連続聞き流し耳学モード
+    const toggleQuizAutoPlay = () => {
+      if (isQuizAutoPlay.value) {
+        stopSpeech();
+      } else {
+        stopSpeech();
+        if (activeQuizQuestions.value.length === 0) {
+          speakText('演習対象の問題がありません。');
+          return;
+        }
+        isQuizAutoPlay.value = true;
+        acquireWakeLock().catch(() => {});
+        playQuizAutoCycle();
+      }
+    };
+
+    const playQuizAutoCycle = () => {
+      if (!isQuizAutoPlay.value || activeQuizQuestions.value.length === 0) {
+        isQuizAutoPlay.value = false;
+        return;
+      }
+
+      const q = currentQuestion.value;
+      if (!q || !q.question) return;
+
+      const qNum = currentQuizIndex.value + 1;
+      const cat = q.chapterName || q.category || '';
+      const opts = q.options || [];
+
+      // タイマーを一旦停止
+      clearInterval(quizTimerInterval);
+      isTimerRunning.value = false;
+
+      // 1. 問題文と選択肢の読み上げ
+      let speech = `ドリル第${qNum}問。${cat}。問題。${q.question}。`;
+      opts.forEach((opt, i) => {
+        speech += `選択肢${i + 1}番、${opt}。`;
+      });
+
+      speakText(speech, () => {
+        if (!isQuizAutoPlay.value) return;
+
+        // 2. シンキングタイム（2.2秒）
+        quizAutoTimer = setTimeout(() => {
+          if (!isQuizAutoPlay.value) return;
+
+          // 画面上も回答状態にして正解を表示
+          handleSelectOption(q.correctIndex);
+
+          // 3. 正解と解説・罠・現場知見の読み上げ（不適当な理由のフィードバック明示）
+          const chosenOpt = opts[q.correctIndex] || '';
+          const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
+          const trapText = q.trapNote ? `出題者の引っ掛け罠、${q.trapNote}。` : '';
+          const fieldText = q.fieldReality ? `現場工事長の知見、${q.fieldReality}。` : '';
+          const answerSpeech = `最も不適当な正解肢は、${q.correctIndex + 1}番です。「${chosenOpt}」という記述が不適当です。${expText}${trapText}${fieldText}`;
+
+          speakText(answerSpeech, () => {
+            if (!isQuizAutoPlay.value) return;
+
+            // 4. 少し間を置いて次の問題へ
+            quizAutoTimer = setTimeout(() => {
+              if (!isQuizAutoPlay.value) return;
+
+              if (currentQuizIndex.value < activeQuizQuestions.value.length - 1) {
+                nextQuestion();
+                playQuizAutoCycle();
+              } else {
+                isQuizAutoPlay.value = false;
+                speakText('選択した工種ドリルの聞き流しがすべて終了しました。大変お疲れ様でした。');
+              }
+            }, 1800);
+          });
+        }, 2200);
+      });
+    };
+
     // ==========================================
     // 🚨 現場直結 罠チートシート ＆ 用語集
     // ==========================================
@@ -1274,7 +1577,67 @@ createApp({
 
     watch([cheatSearchQuery, selectedCheatChapter], () => {
       cheatPage.value = 1;
+      if (isCheatAutoPlay.value) {
+        stopSpeech();
+      }
     });
+
+    // 🎧 罠チートシート：現場知見＆要点連続聞き流し耳学モード
+    const toggleCheatAutoPlay = () => {
+      if (isCheatAutoPlay.value) {
+        stopSpeech();
+      } else {
+        stopSpeech();
+        const list = filteredCheatSheetQuestions.value;
+        if (list.length === 0) {
+          speakText('対象のチートシート項目がありません。');
+          return;
+        }
+        isCheatAutoPlay.value = true;
+        currentCheatSpeechIndex.value = 0;
+        acquireWakeLock().catch(() => {});
+        playCheatAutoCycle();
+      }
+    };
+
+    const playCheatAutoCycle = () => {
+      const list = filteredCheatSheetQuestions.value;
+      if (!isCheatAutoPlay.value || list.length === 0 || currentCheatSpeechIndex.value >= list.length) {
+        isCheatAutoPlay.value = false;
+        speakText('チートシートの全項目聞き流しが完了しました。大変お疲れ様でした。');
+        return;
+      }
+
+      // 該当アイテムがあるページに自動めくり
+      const targetPage = Math.floor(currentCheatSpeechIndex.value / itemsPerPage) + 1;
+      if (cheatPage.value !== targetPage) {
+        cheatPage.value = targetPage;
+      }
+
+      const q = list[currentCheatSpeechIndex.value];
+      const num = currentCheatSpeechIndex.value + 1;
+      const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
+      const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
+      const trapText = q.trapNote ? `出題者の引っ掛け罠、${q.trapNote}。` : '';
+      const fieldText = q.fieldReality ? `現場工事長の知見、${q.fieldReality}。` : '';
+
+      const cheatSpeech = `チートシート第${num}項目。${cat}。問題。${q.question}。最も不適当な肢は、肢${q.correctIndex + 1}番です。「${correctOptText}」という記述が不適当です。${trapText}${fieldText}${expText}`;
+
+      speakText(cheatSpeech, () => {
+        if (!isCheatAutoPlay.value) return;
+
+        cheatAutoTimer = setTimeout(() => {
+          if (!isCheatAutoPlay.value) return;
+          currentCheatSpeechIndex.value++;
+          if (currentCheatSpeechIndex.value < list.length) {
+            playCheatAutoCycle();
+          } else {
+            isCheatAutoPlay.value = false;
+            speakText('チートシートの全項目聞き流しが完了しました。');
+          }
+        }, 1600);
+      });
+    };
 
     // ==========================================
     // 初期化ロード
@@ -1496,17 +1859,27 @@ createApp({
       selectSector,
       finishWordSessionEarly,
 
-      // Audio & Speech (TTS / 耳学通勤モード & 振り返り耳学)
+      // Audio & Speech (TTS / 耳学通勤モード & 振り返り耳学 & 全モード聞き流し)
       isSpeechSupported,
       isSpeaking,
       isAutoPlay,
       isReviewAutoPlay,
       currentReviewSpeechIndex,
+      isExamAutoPlay,
+      isExamReviewAutoPlay,
+      currentExamReviewSpeechIndex,
+      isQuizAutoPlay,
+      isCheatAutoPlay,
+      currentCheatSpeechIndex,
       speechRate,
       speakCurrentWord,
       speakItem,
       toggleAutoPlay,
       toggleReviewAutoPlay,
+      toggleExamAutoPlay,
+      toggleExamReviewAutoPlay,
+      toggleQuizAutoPlay,
+      toggleCheatAutoPlay,
       stopSpeech,
 
       // Exam

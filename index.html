@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>【最新v2.9】1級建築施工管理技士補 精選問題バンク ＆ 実戦シミュレーション</title>
+  <title>【最新v3.0】1級建築施工管理技士補 精選問題バンク ＆ 実戦シミュレーション（全モード聞き流し・耳学対応版）</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -137,7 +137,7 @@
             <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
             <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">精選問題集 ＆ 実戦シミュレーション</h1>
             <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-              ✨ 最新 v2.9 (誤答・要復習確認＆ワンタップ再試験対応版)
+              ✨ 最新 v3.0 (全モード連続聞き流し・完全耳学対応版)
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               DBプール: {{ totalQuestionsCount }} 問
@@ -337,7 +337,16 @@
                 <span v-if="selectedExamMode === 'intensive20'" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded font-semibold">濃縮解説モード</span>
               </div>
 
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2 flex-wrap justify-end">
+                <!-- 🎧 実戦テスト聞き流し耳学ボタン -->
+                <button 
+                  v-if="isSpeechSupported"
+                  @click="toggleExamAutoPlay"
+                  class="px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1.5 transition-all cursor-pointer font-bold"
+                  :class="isExamAutoPlay ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-md shadow-rose-600/30' : 'bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border-indigo-700/80'">
+                  <span>{{ isExamAutoPlay ? '⏹ 停止' : '🎧 聞き流し' }}</span>
+                </button>
+
                 <!-- タイマー -->
                 <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl border text-xs font-mono font-bold"
                      :class="examTimeRemaining <= 180 ? 'bg-rose-950/80 text-rose-300 border-rose-600 animate-pulse' : 'bg-slate-950 text-amber-300 border-slate-700'">
@@ -390,7 +399,7 @@
                  class="space-y-3 pt-3 border-t border-slate-800 mb-4 animate-fade-in">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-slate-950 border border-emerald-600/40 rounded-xl p-3 text-xs">
-                  <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">🟢 正解の論理</h4>
+                  <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">🟢 不適当である理由・正解の論理</h4>
                   <p class="text-slate-200 leading-relaxed whitespace-pre-wrap">{{ currentExamQuestion.explanation }}</p>
                 </div>
                 <div class="bg-slate-950 border border-amber-600/40 rounded-xl p-3 text-xs">
@@ -566,8 +575,16 @@
                 </button>
               </div>
 
-              <div class="text-xs text-slate-400 flex items-center gap-2">
-                <span>表示中: <strong class="text-white">{{ filteredExamReviewList.length }}</strong> 問</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- 🎧 誤答・要復習の連続聞き流しボタン -->
+                <button 
+                  v-if="isSpeechSupported && filteredExamReviewList.length > 0"
+                  @click="toggleExamReviewAutoPlay"
+                  class="px-3 py-1.5 rounded-lg border text-xs flex items-center gap-1.5 transition-all cursor-pointer font-bold"
+                  :class="isExamReviewAutoPlay ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-md shadow-rose-600/30' : 'bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border-indigo-700/80'">
+                  <span>{{ isExamReviewAutoPlay ? '⏹ 聞き流し停止' : '🎧 表示中の問題を連続聞き流し' }}</span>
+                </button>
+                <span class="text-xs text-slate-400">表示中: <strong class="text-white">{{ filteredExamReviewList.length }}</strong> 問</span>
               </div>
             </div>
 
@@ -669,7 +686,7 @@
                 <!-- 正解根拠 & 現場知見 -->
                 <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl space-y-2 text-slate-300">
                   <p class="leading-relaxed">
-                    <strong class="text-emerald-400 font-semibold block mb-1">💡 正解の論理・根拠法令:</strong>
+                    <strong class="text-emerald-400 font-semibold block mb-1">💡 不適当である理由・正解の論理:</strong>
                     {{ item.q.explanation }}
                   </p>
                   <p v-if="item.q.fieldReality" class="text-slate-400 text-[11px] leading-relaxed border-t border-slate-800/80 pt-2">
@@ -1120,6 +1137,14 @@
           </div>
 
           <div class="flex items-center gap-3">
+            <!-- 🎧 工種別ドリル聞き流しボタン -->
+            <button 
+              v-if="isSpeechSupported"
+              @click="toggleQuizAutoPlay"
+              class="px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1.5 transition-all cursor-pointer font-bold"
+              :class="isQuizAutoPlay ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-md shadow-rose-600/30' : 'bg-sky-950 hover:bg-sky-900 text-sky-300 border-sky-700/80'">
+              <span>{{ isQuizAutoPlay ? '⏹ 停止' : '🎧 ドリル連続聞き流し' }}</span>
+            </button>
             <span class="text-xs text-slate-400">進捗: <strong class="text-sky-400 font-semibold">{{ currentQuizIndex + 1 }}</strong> / {{ activeQuizQuestions.length }} 問</span>
             <button @click="resetQuiz" class="text-xs text-slate-400 hover:text-slate-200 underline">最初から</button>
           </div>
@@ -1203,7 +1228,7 @@
               <div class="bg-slate-950 border border-emerald-600/40 rounded-xl p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">正解の根拠・論理</h3>
+                  <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">不適当である理由・正解の論理</h3>
                 </div>
                 <p class="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap select-text">
                   {{ currentQuestion.explanation }}
@@ -1266,9 +1291,19 @@
                 全600問の「引っ掛けポイント」「出題者の罠」「現場工事長のリアル目線」を抽出して一覧化。試験直前の総ざらいや現場での辞書として活用できます。
               </p>
             </div>
-            <span class="text-xs bg-amber-950 text-amber-300 border border-amber-800 px-2.5 py-1 rounded-full font-mono shrink-0">
-              該当 {{ filteredCheatSheetQuestions.length }} 件
-            </span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- 🎧 罠チートシート要点連続聞き流しボタン -->
+              <button 
+                v-if="isSpeechSupported && filteredCheatSheetQuestions.length > 0"
+                @click="toggleCheatAutoPlay"
+                class="px-3 py-1.5 rounded-xl border text-xs flex items-center gap-1.5 transition-all cursor-pointer font-bold shrink-0 shadow"
+                :class="isCheatAutoPlay ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-md shadow-rose-600/30' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400'">
+                <span>{{ isCheatAutoPlay ? '⏹ 聞き流し停止' : '🎧 要点・現場知見を連続聞き流し' }}</span>
+              </button>
+              <span class="text-xs bg-amber-950 text-amber-300 border border-amber-800 px-2.5 py-1 rounded-full font-mono shrink-0">
+                該当 {{ filteredCheatSheetQuestions.length }} 件
+              </span>
+            </div>
           </div>
 
           <div class="mt-4 flex flex-wrap gap-2 items-center">
@@ -1320,7 +1355,7 @@
             </div>
 
             <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-2">
-              <strong class="text-emerald-400">正解の根拠:</strong> {{ q.explanation }}
+              <strong class="text-emerald-400">不適当である理由・正解の論理:</strong> {{ q.explanation }}
             </div>
 
           </div>

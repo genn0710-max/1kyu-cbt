@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v2.9-review-retry';
+const CACHE_NAME = 'cbt-arch-v3.0-all-autoplay';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
