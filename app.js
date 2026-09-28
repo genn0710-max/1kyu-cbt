@@ -101,6 +101,13 @@ createApp({
     const allQuestions = ref([]);
     const totalQuestionsCount = computed(() => allQuestions.value.length);
 
+    // 📲 スマホ読み込み用QRコードモーダル
+    const showQrModal = ref(false);
+    const webAppUrl = 'https://genn0710-max.github.io/1kyu-cbt/';
+    const qrCodeImageUrl = computed(() => {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(webAppUrl)}`;
+    });
+
     // ==========================================
     // ⚡ 即解ワード暗記（一問一答フラッシュ）
     // ==========================================
@@ -518,25 +525,76 @@ createApp({
       }
     }
 
-    // モバイル用音声アンロック
+    // モバイル用音声＆Web Audio API アンロック
+    let sharedAudioCtx = null;
     let isAudioUnlocked = false;
-    const unlockAudioSpeech = () => {
-      if (isAudioUnlocked || !window.speechSynthesis) return;
+
+    // 音声ステータス・トースト通知（ユーザーが音が出ない原因を一目で把握可能に）
+    const speechToastMessage = ref('');
+    const speechToastType = ref('info'); // 'info' | 'success' | 'warn' | 'error'
+    let speechToastTimer = null;
+    const showSpeechToast = (msg, type = 'info', duration = 4000) => {
+      speechToastMessage.value = msg;
+      speechToastType.value = type;
+      if (speechToastTimer) clearTimeout(speechToastTimer);
+      speechToastTimer = setTimeout(() => {
+        speechToastMessage.value = '';
+      }, duration);
+    };
+
+    // ユーザー操作時に即時Web Audio APIで確認音を鳴らし、iOS/Android/Chromeの全オーディオ制限を解放
+    const playChimeAndUnlock = () => {
       try {
-        window.speechSynthesis.resume();
-        isAudioUnlocked = true;
-      } catch (e) {}
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+            sharedAudioCtx = new AudioCtx();
+          }
+          if (sharedAudioCtx.state === 'suspended') {
+            sharedAudioCtx.resume();
+          }
+          // 上品な「ポーン♪」という確認チャイム音（587Hz -> 880Hz）
+          const osc = sharedAudioCtx.createOscillator();
+          const gain = sharedAudioCtx.createGain();
+          osc.type = 'sine';
+          const now = sharedAudioCtx.currentTime;
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.exponentialRampToValueAtTime(880.0, now + 0.12); // A5
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(sharedAudioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        }
+      } catch (e) {
+        console.warn('[AudioContext] playChime notice:', e);
+      }
+
+      if (window.speechSynthesis) {
+        try {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+        } catch (e) {}
+      }
+      isAudioUnlocked = true;
     };
 
     // 画面タップ時にアンロックを仕込む
     if (typeof window !== 'undefined') {
-      window.addEventListener('touchstart', unlockAudioSpeech, { once: true, passive: true });
-      window.addEventListener('click', unlockAudioSpeech, { once: true, passive: true });
+      window.addEventListener('touchstart', playChimeAndUnlock, { once: true, passive: true });
+      window.addEventListener('click', playChimeAndUnlock, { once: true, passive: true });
     }
 
     const getJapaneseVoice = () => {
       if (!window.speechSynthesis) return null;
       const list = availableVoices.value.length > 0 ? availableVoices.value : window.speechSynthesis.getVoices();
+      if (!list || list.length === 0) return null;
+      // 1. ローカル日本語音声を優先
+      const localJa = list.find(v => (v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja')) && v.localService);
+      if (localJa) return localJa;
+      // 2. 任意の日本語音声
       return list.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja')) || null;
     };
 
@@ -604,9 +662,19 @@ createApp({
       });
     }
 
+    // 読み上げ中のカードIDと現在フェーズ（画面のリアルタイム可視化連動）
+    const activeSpeechCardId = ref(null);
+    const activeSpeechPhase = ref(''); // 'question' | 'options' | 'answer' | 'explanation' | 'trap' | 'field'
+
     const stopSpeech = () => {
+      if (speechKeepAliveInterval) {
+        clearInterval(speechKeepAliveInterval);
+        speechKeepAliveInterval = null;
+      }
       if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
       }
       if (autoPlayTimer) {
         clearTimeout(autoPlayTimer);
@@ -639,12 +707,17 @@ createApp({
       isExamReviewAutoPlay.value = false;
       isQuizAutoPlay.value = false;
       isCheatAutoPlay.value = false;
+      activeUtterance = null;
+      window.__cbtUtterance = null;
+      activeSpeechCardId.value = null;
+      activeSpeechPhase.value = '';
       releaseWakeLock();
     };
 
     // 音声テスト＆強制アンロック関数
     const testSpeech = () => {
-      stopSpeech();
+      playChimeAndUnlock();
+      showSpeechToast('🔊 音声テスト開始：チャイム音（ポーン♪）に続いて読み上げが始まります。※無音の場合はマナーモードや端末音量をご確認ください', 'info', 5000);
       speakText('音声テストです。正常に読み上げが行われています。マナーモードがオフになっていることをご確認ください。');
     };
 
@@ -676,60 +749,130 @@ createApp({
       window.location.href = base + '?t=' + Date.now();
     };
 
+    // PC Chrome / Edge / Safari / iOS / Android 全環境対応 超高耐久・同期発話エンジン
+    let activeUtterance = null;
+    let speechKeepAliveInterval = null;
+
     const speakText = (text, onEndCallback = null) => {
       if (!isSpeechSupported.value || !window.speechSynthesis) {
+        showSpeechToast('⚠️ お使いのブラウザは音声合成に対応していません', 'warn');
         if (onEndCallback) onEndCallback();
         return;
       }
 
-      // 進行中の発話をキャンセル
-      window.speechSynthesis.cancel();
+      // 前回のキープアライブタイマー解除
+      if (speechKeepAliveInterval) {
+        clearInterval(speechKeepAliveInterval);
+        speechKeepAliveInterval = null;
+      }
+
+      // Chromeのpauseフリーズ解除
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      } catch (e) {}
+
+      // すでに発話中の場合は cancel() を行い、スタックをリセット
+      if (window.speechSynthesis.speaking) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
+      }
 
       // 正しい日本語発音テキストに正規化変換
       const spokenText = normalizeSpeechText(text);
-      
+      if (!spokenText.trim()) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
       const utterance = new SpeechSynthesisUtterance(spokenText);
       utterance.lang = 'ja-JP';
       utterance.rate = Number(speechRate.value) || 1.0;
       utterance.pitch = 1.0;
 
+      // 安定したローカル日本語音声がある場合のみvoiceを明示設定（未ダウンロード音声によるサイレントクラッシュを防止）
       const jVoice = getJapaneseVoice();
       if (jVoice) {
-        utterance.voice = jVoice;
+        try {
+          utterance.voice = jVoice;
+        } catch (e) {}
       }
+
+      let hasFinished = false;
+      const finishExecution = () => {
+        if (hasFinished) return;
+        hasFinished = true;
+        isSpeaking.value = false;
+        if (speechKeepAliveInterval) {
+          clearInterval(speechKeepAliveInterval);
+          speechKeepAliveInterval = null;
+        }
+        activeUtterance = null;
+        window.__cbtUtterance = null;
+        if (onEndCallback) onEndCallback();
+      };
 
       utterance.onstart = () => {
         isSpeaking.value = true;
       };
 
       utterance.onend = () => {
-        isSpeaking.value = false;
-        if (onEndCallback) onEndCallback();
+        finishExecution();
       };
 
       utterance.onerror = (e) => {
-        console.warn('[Speech] Utterance error:', e);
-        isSpeaking.value = false;
-        if (onEndCallback) onEndCallback();
+        console.warn('[Speech] Utterance event:', e ? e.error : 'unknown');
+        // 'canceled' や 'interrupted' は次発話による正常な中断のため警告トーストは出さない
+        if (e && e.error && e.error !== 'canceled' && e.error !== 'interrupted') {
+          if (e.error === 'not-allowed') {
+            showSpeechToast('⚠️ ブラウザの自動再生制限：画面をタップして音声を許可してください', 'warn');
+          } else if (e.error === 'synthesis-failed' || e.error === 'audio-busy') {
+            showSpeechToast('⚠️ 端末の音声エンジンが一時的に応答していません。再試行してください', 'warn');
+          } else {
+            showSpeechToast(`⚠️ 音声再生エラー (${e.error})：音量やマナーモードをご確認ください`, 'warn');
+          }
+        }
+        finishExecution();
       };
 
-      currentUtterance = utterance;
+      // ガベージコレクション（GC）による発話中断バグ防止（グローバル参照保持）
+      activeUtterance = utterance;
+      window.__cbtUtterance = utterance;
 
-      // ユーザーの同期タップ枠内で即座に実行！
-      try {
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
+      // Chrome等で10秒以上の長文が途中で勝手に沈黙するのを防止するキープアライブ（pause -> resume トリック）
+      speechKeepAliveInterval = setInterval(() => {
+        if (!window.speechSynthesis || !isSpeaking.value) {
+          clearInterval(speechKeepAliveInterval);
+          speechKeepAliveInterval = null;
+          return;
         }
+        try {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          } else if (window.speechSynthesis.speaking) {
+            // Chromeの長文フリーズ対策：pause & resume を即時トグル
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+          }
+        } catch (e) {}
+      }, 7000);
+
+      // ユーザーのジェスチャーコンテキストを維持するため同期的にspeakを実行
+      try {
         window.speechSynthesis.speak(utterance);
       } catch (e) {
         console.error('[Speech] speak error:', e);
         try {
+          // フォールバック: voice指定を完全に外してプレーンなUtteranceで試行
           const fallback = new SpeechSynthesisUtterance(spokenText);
           fallback.lang = 'ja-JP';
-          fallback.onend = onEndCallback;
+          fallback.onend = finishExecution;
+          fallback.onerror = finishExecution;
           window.speechSynthesis.speak(fallback);
         } catch (e2) {
-          if (onEndCallback) onEndCallback();
+          finishExecution();
         }
       }
     };
@@ -1305,6 +1448,7 @@ createApp({
       const item = list[currentExamReviewSpeechIndex.value];
       const q = item.q;
       const num = currentExamReviewSpeechIndex.value + 1;
+      const cat = q.chapterName || q.category || '施工';
       const statusText = item.isCorrect ? '正解した問題です。' : '見直しが必要な問題です。';
       const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
       const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
@@ -1590,9 +1734,12 @@ createApp({
         stopSpeech();
         const list = filteredCheatSheetQuestions.value;
         if (list.length === 0) {
+          showSpeechToast('⚠️ 対象のチートシート項目がありません', 'warn');
           speakText('対象のチートシート項目がありません。');
           return;
         }
+        playChimeAndUnlock();
+        showSpeechToast(`🚨 チートシート連続聞き流し開始（全${list.length}項目）`, 'info', 4000);
         isCheatAutoPlay.value = true;
         currentCheatSpeechIndex.value = 0;
         acquireWakeLock().catch(() => {});
@@ -1600,10 +1747,95 @@ createApp({
       }
     };
 
+    // 🎙️ チートシート1問の同期ステップ読み上げ（問題 → 4肢 → 不適当な正解肢 → 解説 → 罠 → 現場知見）
+    const narrateCheatQuestion = (q, onEnd) => {
+      if (!q) {
+        if (onEnd) onEnd();
+        return;
+      }
+      activeSpeechCardId.value = q.id;
+      const num = (filteredCheatSheetQuestions.value.findIndex(item => item.id === q.id) + 1) || (currentCheatSpeechIndex.value + 1) || 1;
+      const cat = q.chapterName || q.category || '施工';
+      const opts = q.options || [];
+      const correctOptText = (opts && opts[q.correctIndex]) ? opts[q.correctIndex] : '';
+
+      // Step 1: 問題文の読み上げ
+      activeSpeechPhase.value = 'question';
+      const qSpeech = `第${num}問。${cat}。問題。${q.question}。`;
+
+      speakText(qSpeech, () => {
+        if (activeSpeechCardId.value !== q.id) return;
+
+        // Step 2: 4つの選択肢の提示
+        activeSpeechPhase.value = 'options';
+        let optSpeech = '選択肢です。';
+        opts.forEach((opt, idx) => {
+          optSpeech += `${idx + 1}番、${opt}。`;
+        });
+
+        speakText(optSpeech, () => {
+          if (activeSpeechCardId.value !== q.id) return;
+
+          // Step 3: 最も不適当な正解肢の指摘
+          activeSpeechPhase.value = 'answer';
+          const ansSpeech = `最も不適当な正解肢は、${q.correctIndex + 1}番です。「${correctOptText}」という記述が不適当です。`;
+
+          speakText(ansSpeech, () => {
+            if (activeSpeechCardId.value !== q.id) return;
+
+            // Step 4: 不適当である理由の解説
+            activeSpeechPhase.value = 'explanation';
+            const expSpeech = q.explanation ? `不適当である理由の解説。${q.explanation}。` : '';
+
+            speakText(expSpeech, () => {
+              if (activeSpeechCardId.value !== q.id) return;
+
+              // Step 5: 出題者の引っ掛け罠
+              activeSpeechPhase.value = 'trap';
+              const trapSpeech = q.trapNote ? `出題者の引っ掛け罠。${q.trapNote}。` : '';
+
+              speakText(trapSpeech, () => {
+                if (activeSpeechCardId.value !== q.id) return;
+
+                // Step 6: 現場工事長の知見
+                activeSpeechPhase.value = 'field';
+                const fieldSpeech = q.fieldReality ? `現場工事長の知見。${q.fieldReality}。` : '';
+
+                speakText(fieldSpeech, () => {
+                  if (activeSpeechCardId.value === q.id) {
+                    activeSpeechPhase.value = '';
+                  }
+                  if (onEnd) onEnd();
+                });
+              });
+            });
+          });
+        });
+      });
+    };
+
+    // 🔊 チートシート個別項目の音声解説読み上げ
+    const speakCheatItem = (q) => {
+      if (!q) return;
+      if (isSpeaking.value && activeSpeechCardId.value === q.id) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      playChimeAndUnlock();
+      showSpeechToast('🔊 問題・選択肢・罠知見をリアルタイム同期読み上げ中...', 'info', 3000);
+      narrateCheatQuestion(q, () => {
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+      });
+    };
+
     const playCheatAutoCycle = () => {
       const list = filteredCheatSheetQuestions.value;
       if (!isCheatAutoPlay.value || list.length === 0 || currentCheatSpeechIndex.value >= list.length) {
         isCheatAutoPlay.value = false;
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
         speakText('チートシートの全項目聞き流しが完了しました。大変お疲れ様でした。');
         return;
       }
@@ -1615,15 +1847,7 @@ createApp({
       }
 
       const q = list[currentCheatSpeechIndex.value];
-      const num = currentCheatSpeechIndex.value + 1;
-      const correctOptText = (q.options && q.options[q.correctIndex]) ? q.options[q.correctIndex] : '';
-      const expText = q.explanation ? `不適当である理由の解説、${q.explanation}。` : '';
-      const trapText = q.trapNote ? `出題者の引っ掛け罠、${q.trapNote}。` : '';
-      const fieldText = q.fieldReality ? `現場工事長の知見、${q.fieldReality}。` : '';
-
-      const cheatSpeech = `チートシート第${num}項目。${cat}。問題。${q.question}。最も不適当な肢は、肢${q.correctIndex + 1}番です。「${correctOptText}」という記述が不適当です。${trapText}${fieldText}${expText}`;
-
-      speakText(cheatSpeech, () => {
+      narrateCheatQuestion(q, () => {
         if (!isCheatAutoPlay.value) return;
 
         cheatAutoTimer = setTimeout(() => {
@@ -1633,9 +1857,11 @@ createApp({
             playCheatAutoCycle();
           } else {
             isCheatAutoPlay.value = false;
+            activeSpeechCardId.value = null;
+            activeSpeechPhase.value = '';
             speakText('チートシートの全項目聞き流しが完了しました。');
           }
-        }, 1600);
+        }, 1500);
       });
     };
 
@@ -1872,8 +2098,14 @@ createApp({
       isCheatAutoPlay,
       currentCheatSpeechIndex,
       speechRate,
+      speechToastMessage,
+      speechToastType,
+      activeSpeechCardId,
+      activeSpeechPhase,
+      playChimeAndUnlock,
       speakCurrentWord,
       speakItem,
+      speakCheatItem,
       toggleAutoPlay,
       toggleReviewAutoPlay,
       toggleExamAutoPlay,
@@ -1968,13 +2200,16 @@ createApp({
       // App Update & Reload
       reloadApp,
 
-      // Security & Authorization
+      // Security & Authorization & QR Modal
       isAuthorized,
       authPasscode,
       authError,
       authSuccessMsg,
       verifyAuth,
-      lockApp
+      lockApp,
+      showQrModal,
+      webAppUrl,
+      qrCodeImageUrl
     };
   }
 }).mount('#app');

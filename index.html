@@ -128,6 +128,20 @@
       </div>
     </div>
 
+    <!-- 🔊 音声トースト通知（画面最上部に常時オーバーレイ表示） -->
+    <div 
+      v-if="speechToastMessage" 
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-[94vw] w-auto px-4 py-2.5 rounded-xl shadow-2xl backdrop-blur-md border text-xs md:text-sm font-bold flex items-center gap-2 transition-all animate-bounce"
+      :class="{
+        'bg-slate-900/95 text-sky-200 border-sky-500/80 shadow-sky-950/50': speechToastType === 'info',
+        'bg-emerald-950/95 text-emerald-200 border-emerald-500/80 shadow-emerald-950/50': speechToastType === 'success',
+        'bg-amber-950/95 text-amber-200 border-amber-500/80 shadow-amber-950/50': speechToastType === 'warn',
+        'bg-rose-950/95 text-rose-200 border-rose-500/80 shadow-rose-950/50': speechToastType === 'error'
+      }">
+      <span>{{ speechToastMessage }}</span>
+      <button @click="speechToastMessage = ''" class="ml-2 text-slate-400 hover:text-white text-xs px-1">✕</button>
+    </div>
+
     <!-- メインコンテンツ (認証済みのみ表示) -->
     <div v-else class="flex-1 flex flex-col">
       <!-- ヘッダー -->
@@ -137,7 +151,7 @@
             <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
             <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">精選問題集 ＆ 実戦シミュレーション</h1>
             <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-              ✨ 最新 v3.0 (全モード連続聞き流し・完全耳学対応版)
+              ✨ v3.0 [Build: 2026.09.28-2140]
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               DBプール: {{ totalQuestionsCount }} 問
@@ -149,6 +163,14 @@
             <span v-if="!isOnline" class="text-[11px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold animate-pulse">
               <span>✈️</span> オフライン動作中
             </span>
+            <!-- 🔊 音声テストボタン（全画面共通） -->
+            <button 
+              @click="testSpeech" 
+              class="text-[11px] bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/80 px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all select-none cursor-pointer active:scale-95 shadow-sm font-bold"
+              title="端末スピーカーからの音声テストを行います（確認チャイム＋日本語読み上げ）">
+              <span>🔊</span>
+              <span>音声テスト</span>
+            </button>
             <!-- 🔆 画面スリープ防止トグルボタン -->
             <button 
               @click="toggleManualWakeLock" 
@@ -165,6 +187,14 @@
               title="最新版にキャッシュ更新して再読み込みします">
               <span>🔄</span>
               <span>最新版に更新</span>
+            </button>
+            <!-- 📲 スマホ読み込みQRコードボタン -->
+            <button 
+              @click="showQrModal = true" 
+              class="text-[11px] bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/80 px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-all select-none cursor-pointer active:scale-95 shadow-sm"
+              title="スマホで読み込むQRコードを表示します">
+              <span>📲</span>
+              <span>スマホ用QR</span>
             </button>
             <!-- 🔒 アプリ再ロックボタン -->
             <button 
@@ -1300,6 +1330,12 @@
                 :class="isCheatAutoPlay ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-md shadow-rose-600/30' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400'">
                 <span>{{ isCheatAutoPlay ? '⏹ 聞き流し停止' : '🎧 要点・現場知見を連続聞き流し' }}</span>
               </button>
+              <!-- 🔊 音声テストボタン -->
+              <button 
+                @click="testSpeech" 
+                class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1 text-xs shrink-0 cursor-pointer">
+                <span>🔊</span> テスト発話
+              </button>
               <span class="text-xs bg-amber-950 text-amber-300 border border-amber-800 px-2.5 py-1 rounded-full font-mono shrink-0">
                 該当 {{ filteredCheatSheetQuestions.length }} 件
               </span>
@@ -1327,35 +1363,117 @@
           <div 
             v-for="q in paginatedCheatQuestions" 
             :key="q.id"
-            class="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-xl p-4 transition-all flex flex-col justify-between space-y-3 shadow">
+            class="bg-slate-900 border rounded-xl p-4 transition-all flex flex-col justify-between space-y-3 shadow relative"
+            :class="isCheatAutoPlay && filteredCheatSheetQuestions[currentCheatSpeechIndex]?.id === q.id ? 'border-amber-400 ring-2 ring-amber-400/50 bg-amber-950/20' : 'border-slate-800 hover:border-amber-500/50'">
             
             <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="text-[11px] bg-slate-800 text-sky-400 px-2 py-0.5 rounded-full font-medium">{{ q.chapterName || q.category }}</span>
-                <span class="text-[11px] font-mono text-emerald-400 font-bold">正解: 肢{{ q.correctIndex + 1 }}</span>
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[11px] bg-slate-800 text-sky-400 px-2 py-0.5 rounded-full font-medium">{{ q.chapterName || q.category }}</span>
+                  <span class="text-[11px] font-mono bg-rose-950/80 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full font-bold">
+                    正解（不適当）: 肢{{ q.correctIndex + 1 }}
+                  </span>
+                  <!-- 再生中フェーズインジケーター -->
+                  <span v-if="activeSpeechCardId === q.id" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
+                    <span>🔊</span>
+                    <span v-if="activeSpeechPhase === 'question'">問題文を再生中</span>
+                    <span v-else-if="activeSpeechPhase === 'options'">選択肢を提示中</span>
+                    <span v-else-if="activeSpeechPhase === 'answer'">不適当な肢を指摘中</span>
+                    <span v-else-if="activeSpeechPhase === 'explanation'">解説を再生中</span>
+                    <span v-else-if="activeSpeechPhase === 'trap'">引っ掛け罠を解説中</span>
+                    <span v-else-if="activeSpeechPhase === 'field'">現場知見を解説中</span>
+                    <span v-else>再生中</span>
+                  </span>
+                </div>
+                <!-- 🔊 個別問題 音声読み上げボタン -->
+                <button 
+                  v-if="isSpeechSupported"
+                  @click="speakCheatItem(q)"
+                  class="px-2.5 py-1 rounded-lg flex items-center gap-1 text-[11px] font-bold transition-all active:scale-95 cursor-pointer shadow-sm shrink-0"
+                  :class="activeSpeechCardId === q.id && isSpeaking ? 'bg-rose-600 text-white border border-rose-400 animate-pulse' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'"
+                  :title="activeSpeechCardId === q.id && isSpeaking ? '音声を停止します' : 'この問題・4つの選択肢・罠と現場知見を同期音声で読み上げます'">
+                  <span>{{ activeSpeechCardId === q.id && isSpeaking ? '⏹ 停止' : '🔊 聴く' }}</span>
+                </button>
               </div>
               
-              <h4 class="text-xs font-semibold text-slate-200 line-clamp-2 mb-2">
-                {{ q.question }}
-              </h4>
+              <!-- 1. 問題文（読み上げ連動ハイライト） -->
+              <div 
+                class="rounded-xl p-2.5 mb-2.5 transition-all border"
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/50' : 'bg-slate-950/60 border-slate-800/80'">
+                <div class="text-[10px] font-bold text-sky-400 mb-0.5 flex items-center gap-1">
+                  <span>📌</span> 問題
+                </div>
+                <h4 class="text-xs font-semibold text-slate-200 leading-relaxed">
+                  {{ q.question }}
+                </h4>
+              </div>
 
-              <div class="bg-amber-950/30 border border-amber-600/40 rounded-lg p-3 text-xs text-amber-200 leading-relaxed whitespace-pre-wrap select-text mb-2">
-                <div class="font-bold text-amber-400 mb-1 flex items-center gap-1">
+              <!-- 2. 選択肢 4肢リスト（可視化＆読み上げ連動） -->
+              <div 
+                v-if="q.options && q.options.length > 0" 
+                class="rounded-xl p-2.5 mb-2.5 border space-y-1.5 transition-all"
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'options' ? 'bg-indigo-950/30 border-indigo-400/80 ring-2 ring-indigo-400/40' : 'bg-slate-950/40 border-slate-800/60'">
+                <div class="text-[10px] font-bold text-slate-400 flex items-center justify-between mb-1">
+                  <span class="flex items-center gap-1"><span>🔢</span> 4つの選択肢</span>
+                  <span class="text-[10px] text-slate-500">※最も不適当な肢が正解</span>
+                </div>
+                <div 
+                  v-for="(opt, oIdx) in q.options" 
+                  :key="oIdx"
+                  class="rounded-lg p-2 text-xs transition-all border"
+                  :class="{
+                    'bg-rose-950/40 border-rose-600/70 text-rose-200 ring-2 ring-rose-500/50 shadow-md': (activeSpeechCardId === q.id && activeSpeechPhase === 'answer' && oIdx === q.correctIndex),
+                    'bg-rose-950/20 border-rose-800/50 text-rose-300 font-medium': (oIdx === q.correctIndex && !(activeSpeechCardId === q.id && activeSpeechPhase === 'answer')),
+                    'bg-slate-900/60 border-slate-800 text-slate-400': oIdx !== q.correctIndex
+                  }">
+                  <div class="flex items-start gap-1.5">
+                    <span 
+                      class="px-1.5 py-0.2 rounded text-[10px] font-mono shrink-0 font-bold"
+                      :class="oIdx === q.correctIndex ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400'">
+                      肢{{ oIdx + 1 }}
+                    </span>
+                    <span class="flex-1 leading-relaxed">{{ opt }}</span>
+                    <span v-if="oIdx === q.correctIndex" class="text-[10px] bg-rose-900/90 text-rose-200 border border-rose-600 px-1.5 py-0.5 rounded shrink-0 font-bold">
+                      ❌ 不適当（正解）
+                    </span>
+                    <span v-else class="text-[10px] text-slate-500 shrink-0">
+                      ⭕️ 適当
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. 不適当である理由・正解の論理（解説） -->
+              <div 
+                class="rounded-xl p-2.5 mb-2 transition-all border text-xs leading-relaxed"
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'explanation' ? 'bg-emerald-950/60 border-emerald-400 ring-2 ring-emerald-400/50 text-emerald-100' : 'bg-slate-950/60 border-slate-800 text-slate-300'">
+                <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1 text-[11px]">
+                  <span>💡</span> 不適当である理由（正解の論理）:
+                </div>
+                <div class="text-xs text-slate-200 leading-relaxed">
+                  {{ q.explanation }}
+                </div>
+              </div>
+
+              <!-- 4. 🚨 罠・引っ掛け要点（読み上げ連動ハイライト） -->
+              <div 
+                class="rounded-xl p-3 text-xs leading-relaxed whitespace-pre-wrap select-text mb-2 transition-all border"
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'trap' ? 'bg-amber-950/80 border-amber-400 ring-2 ring-amber-400/60 text-amber-100 shadow-md' : 'bg-amber-950/20 border-amber-600/30 text-amber-200'">
+                <div class="font-bold text-amber-400 mb-1 flex items-center gap-1 text-[11px]">
                   <span>🚨</span> 罠・引っ掛け要点:
                 </div>
                 {{ q.trapNote }}
               </div>
 
-              <div class="bg-slate-950 border border-cyan-800/40 rounded-lg p-2.5 text-xs text-slate-300 leading-relaxed">
-                <div class="font-bold text-cyan-300 mb-0.5 flex items-center gap-1">
+              <!-- 5. 📐 現場工事長の知見（読み上げ連動ハイライト） -->
+              <div 
+                class="rounded-xl p-2.5 text-xs leading-relaxed transition-all border"
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'field' ? 'bg-cyan-950/80 border-cyan-400 ring-2 ring-cyan-400/60 text-cyan-100 shadow-md' : 'bg-slate-950 border-cyan-800/30 text-slate-300'">
+                <div class="font-bold text-cyan-300 mb-0.5 flex items-center gap-1 text-[11px]">
                   <span>📐</span> 現場工事長の知見:
                 </div>
                 {{ q.fieldReality }}
               </div>
-            </div>
-
-            <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-2">
-              <strong class="text-emerald-400">不適当である理由・正解の論理:</strong> {{ q.explanation }}
             </div>
 
           </div>
@@ -1558,6 +1676,55 @@
 
     <footer class="mt-8 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
       <p>1級建築施工管理技士補 600問大規模プール ＆ 実戦シミュレーション | 完全ローカル IndexedDB 永続化</p>
+    </footer>
+
+    <!-- 📲 スマホ用 QRコード表示モーダル -->
+    <div v-if="showQrModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in" @click.self="showQrModal = false">
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+            <span>📲</span> スマホ読み込み用 QRコード
+          </h3>
+          <button @click="showQrModal = false" class="text-slate-400 hover:text-white text-lg font-bold leading-none p-1">
+            ✕
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-300 leading-relaxed">
+          スマホの標準カメラで下のQRコードを読み取ると、スマホ版のアプリが即座に起動します。
+        </p>
+
+        <!-- QRコード画像 -->
+        <div class="bg-white p-3 rounded-xl inline-block shadow-md mx-auto">
+          <img :src="qrCodeImageUrl" alt="スマホ用QRコード" class="w-52 h-52 mx-auto block" />
+        </div>
+
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] text-slate-400 break-all select-all font-mono">
+          {{ webAppUrl }}
+        </div>
+
+        <div class="text-[11px] text-amber-300/90 text-left bg-amber-950/30 border border-amber-800/40 p-2.5 rounded-lg space-y-1">
+          <p>🔑 <strong class="text-amber-200">合言葉（パスコード）:</strong> <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">2026</code> または <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">cbt2026</code></p>
+          <p>💡 スマホの「ホーム画面に追加」を行うと全画面の専用アプリとして動作します。</p>
+          <p class="text-[10px] text-slate-400 border-t border-amber-800/30 pt-1">
+            Build: <span class="font-mono text-amber-300">v3.0-20260928-2140</span>（PC・スマホ共通識別ID）
+          </p>
+        </div>
+
+        <button 
+          @click="showQrModal = false"
+          class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl text-xs transition-all">
+          閉じる
+        </button>
+      </div>
+    </div>
+
+    <!-- 🏷️ フッター：PC・スマホ共通 バージョン特定表示 -->
+    <footer class="mt-8 mb-4 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1 select-none">
+      <div>1級建築施工管理技士補 CBT学習システム <strong class="text-slate-300">v3.0</strong></div>
+      <div class="text-[11px] text-slate-500 font-mono">
+        PC・スマホ合致ビルド識別子: <span class="text-amber-400 font-bold">2026.09.28-2140</span> (完全同期耳学・4肢可視化連動)
+      </div>
     </footer>
 
     </div> <!-- /v-else メインコンテンツ -->
