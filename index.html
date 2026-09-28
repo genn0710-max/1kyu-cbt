@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>【最新v3.0】1級建築施工管理技士補 精選問題バンク ＆ 実戦シミュレーション（全モード聞き流し・耳学対応版）</title>
+  <title>1級建築施工管理技士補 Ver.3.2.0</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,9 +13,9 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- 600問問題バンク -->
-  <script src="questions_bank.js"></script>
+  <script src="questions_bank.js?v=3.2.0"></script>
   <!-- 即解ワード暗記バンク -->
-  <script src="word_bank.js"></script>
+  <script src="word_bank.js?v=3.2.0"></script>
   <!-- モバイル & PWA (iOS / Android) メタタグ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -148,13 +148,15 @@
       <header class="border-b border-slate-800/80 pb-4 mb-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2 py-0.5 rounded text-xs tracking-wider">1級建築施工管理技士補</span>
-            <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">精選問題集 ＆ 実戦シミュレーション</h1>
-            <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-700 px-2.5 py-0.5 rounded-full font-bold shadow-sm">
-              ✨ v3.0 [Build: 2026.09.28-2140]
+            <span class="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black px-2.5 py-0.5 rounded text-xs tracking-wider">CBT国家資格</span>
+            <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">1級建築施工管理技士補</h1>
+            <!-- 累積Verバッジ -->
+            <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-3 py-0.5 rounded-full font-bold shadow-sm font-mono flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Ver.3.2.0
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
-              DBプール: {{ totalQuestionsCount }} 問
+              600問完全網羅
             </span>
             <span class="text-[11px] bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>2024-2026最新法改正・仕様書対応
@@ -1707,7 +1709,7 @@
           <p>🔑 <strong class="text-amber-200">合言葉（パスコード）:</strong> <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">2026</code> または <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">cbt2026</code></p>
           <p>💡 スマホの「ホーム画面に追加」を行うと全画面の専用アプリとして動作します。</p>
           <p class="text-[10px] text-slate-400 border-t border-amber-800/30 pt-1">
-            Build: <span class="font-mono text-amber-300">v3.0-20260928-2140</span>（PC・スマホ共通識別ID）
+            追跡バージョン: <span class="font-mono text-amber-300 font-bold">1級建築施工管理技士補 Ver.3.2.0</span>（PC・スマホ共通）
           </p>
         </div>
 
@@ -1719,25 +1721,35 @@
       </div>
     </div>
 
-    <!-- 🏷️ フッター：PC・スマホ共通 バージョン特定表示 -->
+    <!-- 🏷️ フッター：PC・スマホ共通 Ver追跡表示 -->
     <footer class="mt-8 mb-4 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1 select-none">
-      <div>1級建築施工管理技士補 CBT学習システム <strong class="text-slate-300">v3.0</strong></div>
-      <div class="text-[11px] text-slate-500 font-mono">
-        PC・スマホ合致ビルド識別子: <span class="text-amber-400 font-bold">2026.09.28-2140</span> (完全同期耳学・4肢可視化連動)
+      <div class="font-medium text-slate-300 text-sm">1級建築施工管理技士補</div>
+      <div class="text-xs text-slate-400 font-mono">
+        【PC・スマホ合致 追跡バージョン】 <span class="text-emerald-400 font-bold">Ver.3.2.0</span>
       </div>
+      <div class="text-[10px] text-slate-600">※600問完全網羅 / 4肢可視化同期 / Web Audio完全アンロック / 全モード連続耳学</div>
     </footer>
 
     </div> <!-- /v-else メインコンテンツ -->
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3.2.0"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
     if ('serviceWorker' in navigator) {
+      // 新しいService Workerが有効化されたら自動で画面を最新リロード
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./sw.js?v=3.2.0')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック

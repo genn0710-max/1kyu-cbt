@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.0-all-autoplay';
+const CACHE_NAME = 'cbt-arch-v3.2.0-clean';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
