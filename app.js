@@ -54,6 +54,8 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
+    const appVersion = ref('Ver.3.2.1');
+
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
     // ==========================================
@@ -101,11 +103,21 @@ createApp({
     const allQuestions = ref([]);
     const totalQuestionsCount = computed(() => allQuestions.value.length);
 
-    // 📲 スマホ読み込み用QRコードモーダル
+    // 📲 スマホ読み込み用QRコードモーダル (リアルタイムVer.3.2.1配信 & Wi-Fi & GitHub Pages対応)
     const showQrModal = ref(false);
-    const webAppUrl = 'https://genn0710-max.github.io/1kyu-cbt/';
+    const qrMode = ref('tunnel'); // 'tunnel' | 'wifi' | 'github'
+    const liveTunnelUrl = 'https://fool-tracks-attitudes-herbs.trycloudflare.com/?v=3.2.1';
+    const localWifiUrl = 'http://192.168.0.8:8090/?v=3.2.1';
+    const githubPagesUrl = 'https://genn0710-max.github.io/1kyu-cbt/';
+
+    const currentQrUrl = computed(() => {
+      if (qrMode.value === 'wifi') return localWifiUrl;
+      if (qrMode.value === 'github') return githubPagesUrl;
+      return liveTunnelUrl;
+    });
+
     const qrCodeImageUrl = computed(() => {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(webAppUrl)}`;
+      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(currentQrUrl.value)}`;
     });
 
     // ==========================================
@@ -2254,6 +2266,7 @@ createApp({
       testSpeech,
 
       // App Update & Reload
+      appVersion,
       reloadApp,
 
       // Security & Authorization & QR Modal
@@ -2264,7 +2277,11 @@ createApp({
       verifyAuth,
       lockApp,
       showQrModal,
-      webAppUrl,
+      qrMode,
+      liveTunnelUrl,
+      localWifiUrl,
+      githubPagesUrl,
+      currentQrUrl,
       qrCodeImageUrl
     };
   }

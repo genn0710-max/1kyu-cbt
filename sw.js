@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.2.1-android-fix';
+const CACHE_NAME = 'cbt-arch-v3.2.1-network-first';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -33,23 +33,24 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_NAME).map((key) => {
+          console.log('[SW] Deleting old cache:', key);
+          return caches.delete(key);
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// フェッチ制御：HTMLはNetwork-First（常に最新を表示）、オフライン時はキャッシュから爆速起動
+// フェッチ制御：完全Network-First（オンライン時は常にサーバーから最新を取得）
+// オフライン時のみキャッシュから返す
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
-  const isNavigate = event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname.endsWith('/');
-
-  if (isNavigate) {
-    // 🌐 画面（HTML）：ネットワーク優先（最新版を取得）、失敗時（オフライン）のみキャッシュ
-    event.respondWith(
-      fetch(event.request).then((networkResponse) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        // ネットワーク取得成功時：キャッシュを最新に更新してレスポンスを返す
         if (networkResponse && networkResponse.status === 200) {
           const resClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -57,30 +58,17 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        // オフライン時のフォールバック
+      })
+      .catch(() => {
+        // ネットワーク切断時（オフライン）：キャッシュからフォールバック
         return caches.match(event.request).then((cached) => {
-          return cached || caches.match('./index.html') || caches.match('./');
+          if (cached) return cached;
+          const url = new URL(event.request.url);
+          if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname.endsWith('/')) {
+            return caches.match('./index.html') || caches.match('./');
+          }
+          return null;
         });
       })
-    );
-    return;
-  }
-
-  // 📦 その他の静的アセット（JS / CSS / 画像）：Stale-While-Revalidate（キャッシュ返却＋裏で最新取得）
-  event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const resClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, resClone);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {});
-
-      return cachedResponse || fetchPromise;
-    })
   );
 });
