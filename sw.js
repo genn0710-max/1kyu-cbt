@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.2.0-clean';
+const CACHE_NAME = 'cbt-arch-v3.2.1-android-fix';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

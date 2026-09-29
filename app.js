@@ -666,11 +666,11 @@ createApp({
     const activeSpeechCardId = ref(null);
     const activeSpeechPhase = ref(''); // 'question' | 'options' | 'answer' | 'explanation' | 'trap' | 'field'
 
+    let currentSpeechSessionId = 0;
+    let activeUtterance = null;
+
     const stopSpeech = () => {
-      if (speechKeepAliveInterval) {
-        clearInterval(speechKeepAliveInterval);
-        speechKeepAliveInterval = null;
-      }
+      currentSpeechSessionId++; // 実行中のチャンク再生キューを即座に破棄
       if (window.speechSynthesis) {
         try {
           window.speechSynthesis.cancel();
@@ -749,9 +749,74 @@ createApp({
       window.location.href = base + '?t=' + Date.now();
     };
 
-    // PC Chrome / Edge / Safari / iOS / Android 全環境対応 超高耐久・同期発話エンジン
-    let activeUtterance = null;
-    let speechKeepAliveInterval = null;
+    // PC Chrome / Edge / Safari / iOS / Android 全環境対応：センテンス・チャンキング発話エンジン
+    // Android Chromeの15〜20秒音声タイムアウト（フェードアウト・サイレント切断バグ）を完全に防止
+    // 日本語テキストを自然な文節・句読点（40〜50文字以内）で安全なチャンクに分割
+    function splitTextIntoSpeechChunks(text) {
+      if (!text) return [];
+      // 1. 改行、句点、疑問符、感嘆符で分割
+      const rawSegments = text.split(/([\n\r]+|[。！？\?!]+)/);
+      const tempChunks = [];
+      let current = '';
+
+      for (let i = 0; i < rawSegments.length; i++) {
+        const seg = rawSegments[i];
+        if (!seg) continue;
+        if (/^[\n\r。！？\?!]+$/.test(seg)) {
+          current += seg;
+          if (current.trim()) {
+            tempChunks.push(current.trim());
+          }
+          current = '';
+        } else {
+          current += seg;
+          if (current.length >= 50) {
+            tempChunks.push(current.trim());
+            current = '';
+          }
+        }
+      }
+      if (current.trim()) {
+        tempChunks.push(current.trim());
+      }
+
+      // 2. 50文字を超える長文は、読点（、）等でさらに小分けに細分化
+      const finalChunks = [];
+      for (const chunk of tempChunks) {
+        if (chunk.length <= 50) {
+          finalChunks.push(chunk);
+        } else {
+          const subParts = chunk.split(/(、|,\s*)/);
+          let subCurrent = '';
+          for (const part of subParts) {
+            if (part === '、' || /^,\s*$/.test(part)) {
+              subCurrent += part;
+              if (subCurrent.length >= 25) {
+                finalChunks.push(subCurrent.trim());
+                subCurrent = '';
+              }
+            } else {
+              if (subCurrent.length + part.length > 50 && subCurrent.length > 0) {
+                finalChunks.push(subCurrent.trim());
+                subCurrent = part;
+              } else {
+                subCurrent += part;
+              }
+            }
+          }
+          if (subCurrent.trim()) {
+            if (subCurrent.length > 50) {
+              for (let i = 0; i < subCurrent.length; i += 45) {
+                finalChunks.push(subCurrent.slice(i, i + 45));
+              }
+            } else {
+              finalChunks.push(subCurrent.trim());
+            }
+          }
+        }
+      }
+      return finalChunks.filter(c => c && c.trim().length > 0);
+    }
 
     const speakText = (text, onEndCallback = null) => {
       if (!isSpeechSupported.value || !window.speechSynthesis) {
@@ -760,25 +825,18 @@ createApp({
         return;
       }
 
-      // 前回のキープアライブタイマー解除
-      if (speechKeepAliveInterval) {
-        clearInterval(speechKeepAliveInterval);
-        speechKeepAliveInterval = null;
-      }
+      // 新規セッションIDを発行（直前の未完了キューを即座に破棄・無効化）
+      const sessionId = ++currentSpeechSessionId;
 
-      // Chromeのpauseフリーズ解除
+      // Chromeのpauseフリーズ解除 & 以前の発話をスタッククリア
       try {
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
-      } catch (e) {}
-
-      // すでに発話中の場合は cancel() を行い、スタックをリセット
-      if (window.speechSynthesis.speaking) {
-        try {
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
           window.speechSynthesis.cancel();
-        } catch (e) {}
-      }
+        }
+      } catch (e) {}
 
       // 正しい日本語発音テキストに正規化変換
       const spokenText = normalizeSpeechText(text);
@@ -787,94 +845,92 @@ createApp({
         return;
       }
 
-      const utterance = new SpeechSynthesisUtterance(spokenText);
-      utterance.lang = 'ja-JP';
-      utterance.rate = Number(speechRate.value) || 1.0;
-      utterance.pitch = 1.0;
-
-      // 安定したローカル日本語音声がある場合のみvoiceを明示設定（未ダウンロード音声によるサイレントクラッシュを防止）
-      const jVoice = getJapaneseVoice();
-      if (jVoice) {
-        try {
-          utterance.voice = jVoice;
-        } catch (e) {}
+      // Android 15〜20秒ウォッチドッグ制限回避：小チャンク（2〜5秒）に分割して連鎖再生
+      const chunks = splitTextIntoSpeechChunks(spokenText);
+      if (chunks.length === 0) {
+        if (onEndCallback) onEndCallback();
+        return;
       }
 
-      let hasFinished = false;
+      let chunkIndex = 0;
+      let hasEnded = false;
+
       const finishExecution = () => {
-        if (hasFinished) return;
-        hasFinished = true;
+        if (hasEnded) return;
+        hasEnded = true;
+        if (sessionId !== currentSpeechSessionId) return;
         isSpeaking.value = false;
-        if (speechKeepAliveInterval) {
-          clearInterval(speechKeepAliveInterval);
-          speechKeepAliveInterval = null;
-        }
         activeUtterance = null;
         window.__cbtUtterance = null;
         if (onEndCallback) onEndCallback();
       };
 
-      utterance.onstart = () => {
-        isSpeaking.value = true;
-      };
+      const playNextChunk = () => {
+        // 別発話やstopSpeechによりセッションが無効化されている場合は中断
+        if (sessionId !== currentSpeechSessionId) return;
 
-      utterance.onend = () => {
-        finishExecution();
-      };
-
-      utterance.onerror = (e) => {
-        console.warn('[Speech] Utterance event:', e ? e.error : 'unknown');
-        // 'canceled' や 'interrupted' は次発話による正常な中断のため警告トーストは出さない
-        if (e && e.error && e.error !== 'canceled' && e.error !== 'interrupted') {
-          if (e.error === 'not-allowed') {
-            showSpeechToast('⚠️ ブラウザの自動再生制限：画面をタップして音声を許可してください', 'warn');
-          } else if (e.error === 'synthesis-failed' || e.error === 'audio-busy') {
-            showSpeechToast('⚠️ 端末の音声エンジンが一時的に応答していません。再試行してください', 'warn');
-          } else {
-            showSpeechToast(`⚠️ 音声再生エラー (${e.error})：音量やマナーモードをご確認ください`, 'warn');
-          }
-        }
-        finishExecution();
-      };
-
-      // ガベージコレクション（GC）による発話中断バグ防止（グローバル参照保持）
-      activeUtterance = utterance;
-      window.__cbtUtterance = utterance;
-
-      // Chrome等で10秒以上の長文が途中で勝手に沈黙するのを防止するキープアライブ（pause -> resume トリック）
-      speechKeepAliveInterval = setInterval(() => {
-        if (!window.speechSynthesis || !isSpeaking.value) {
-          clearInterval(speechKeepAliveInterval);
-          speechKeepAliveInterval = null;
+        if (chunkIndex >= chunks.length) {
+          finishExecution();
           return;
         }
-        try {
-          if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-          } else if (window.speechSynthesis.speaking) {
-            // Chromeの長文フリーズ対策：pause & resume を即時トグル
-            window.speechSynthesis.pause();
-            window.speechSynthesis.resume();
-          }
-        } catch (e) {}
-      }, 7000);
 
-      // ユーザーのジェスチャーコンテキストを維持するため同期的にspeakを実行
-      try {
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        console.error('[Speech] speak error:', e);
-        try {
-          // フォールバック: voice指定を完全に外してプレーンなUtteranceで試行
-          const fallback = new SpeechSynthesisUtterance(spokenText);
-          fallback.lang = 'ja-JP';
-          fallback.onend = finishExecution;
-          fallback.onerror = finishExecution;
-          window.speechSynthesis.speak(fallback);
-        } catch (e2) {
-          finishExecution();
+        const chunkText = chunks[chunkIndex];
+        chunkIndex++;
+
+        const utterance = new SpeechSynthesisUtterance(chunkText);
+        utterance.lang = 'ja-JP';
+        utterance.rate = Number(speechRate.value) || 1.0;
+        utterance.pitch = 1.0;
+
+        const jVoice = getJapaneseVoice();
+        if (jVoice) {
+          try {
+            utterance.voice = jVoice;
+          } catch (e) {}
         }
-      }
+
+        utterance.onstart = () => {
+          if (sessionId === currentSpeechSessionId) {
+            isSpeaking.value = true;
+          }
+        };
+
+        utterance.onend = () => {
+          if (sessionId === currentSpeechSessionId) {
+            playNextChunk();
+          }
+        };
+
+        utterance.onerror = (e) => {
+          console.warn('[Speech] Utterance event:', e ? e.error : 'unknown');
+          if (sessionId !== currentSpeechSessionId) return;
+          if (e && (e.error === 'canceled' || e.error === 'interrupted')) {
+            finishExecution();
+            return;
+          }
+          if (e && e.error && e.error === 'not-allowed') {
+            showSpeechToast('⚠️ ブラウザの自動再生制限：画面をタップして音声を許可してください', 'warn');
+            finishExecution();
+            return;
+          }
+          // その他の軽微なエラーは次チャンクへ継続
+          playNextChunk();
+        };
+
+        // ガベージコレクション（GC）による発話中断バグ防止
+        activeUtterance = utterance;
+        window.__cbtUtterance = utterance;
+
+        try {
+          window.speechSynthesis.speak(utterance);
+        } catch (e) {
+          console.error('[Speech] speak error:', e);
+          playNextChunk();
+        }
+      };
+
+      // 最初のチャンクを再生開始
+      playNextChunk();
     };
 
     // 現在の単語を読み上げる（手動ボタン）
