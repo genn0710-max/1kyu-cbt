@@ -1922,7 +1922,7 @@
 
   </div>
 
-  <script src="app.js?v=3.2.4"></script>
+  <script src="app.js?v=3.2.5"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -1937,7 +1937,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.2.4')
+        navigator.serviceWorker.register('./sw.js?v=3.2.5')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック

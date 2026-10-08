@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.2.4-speech-highlight-scroll';
+const CACHE_NAME = 'cbt-arch-v3.2.5-tremie-pronunciation';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

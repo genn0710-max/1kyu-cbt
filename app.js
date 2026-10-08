@@ -54,7 +54,7 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
-    const appVersion = ref('Ver.3.2.4');
+    const appVersion = ref('Ver.3.2.5');
 
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
@@ -580,11 +580,27 @@ createApp({
       s = s.replace(/親杭/g, "おやぐい");
       s = s.replace(/鋼矢板/g, "こうやいた");
       s = s.replace(/矢板/g, "やいた");
+      s = s.replace(/トレミー管|トレミー菅/g, "トレミーかん");
+      s = s.replace(/トレミー抜け/g, "トレミーぬけ");
       s = s.replace(/場所打ちコンクリート杭/g, "ばしょうちコンクリートぐい");
+      s = s.replace(/場所打ち杭/g, "ばしょうちぐい");
       s = s.replace(/場所打ち/g, "ばしょうち");
       s = s.replace(/既製杭/g, "きせいくい");
       s = s.replace(/節杭/g, "ふしぐい");
       s = s.replace(/先端羽根付き鋼管杭/g, "せんたんはねつきこうかんぐい");
+      s = s.replace(/鋼管杭/g, "こうかんぐい");
+      s = s.replace(/杭頭/g, "くいとう");
+      s = s.replace(/杭胴体/g, "くいどうたい");
+      s = s.replace(/鉄筋かご|鉄筋籠/g, "てっきんかご");
+      s = s.replace(/孔壁/g, "こうへき");
+      s = s.replace(/孔底/g, "こうてい");
+      s = s.replace(/孔口/g, "こうこう");
+      s = s.replace(/泥水/g, "でいすい");
+      s = s.replace(/底ざらい/g, "そこざらい");
+      s = s.replace(/検尺テープ|検尺/g, "けんじゃく");
+      s = s.replace(/スライム処理/g, "スライムしょり");
+      s = s.replace(/安定液/g, "あんていえき");
+      s = s.replace(/ベントナイト/g, "ベントナイト");
       s = s.replace(/割栗石/g, "わりぐりいし");
       s = s.replace(/目荒らし|目荒し/g, "めあらし");
       s = s.replace(/捨てコンクリート|捨コン/g, "すてコンクリート");
@@ -593,6 +609,23 @@ createApp({
       s = s.replace(/独立基礎/g, "どくりつきそ");
       s = s.replace(/地耐力/g, "ちたいりょく");
       s = s.replace(/盤ぶくれ/g, "ばんぶくれ");
+
+      // 【配管・管工種（「くだ」誤読防止）】
+      s = s.replace(/鋼管/g, "こうかん");
+      s = s.replace(/配管/g, "はいかん");
+      s = s.replace(/塩ビ管/g, "エンビかん");
+      s = s.replace(/さや管|サヤ管/g, "サヤかん");
+      s = s.replace(/ヒューム管/g, "ヒュームかん");
+      s = s.replace(/ボイド管/g, "ボイドかん");
+      s = s.replace(/スリーブ管/g, "スリーブかん");
+      s = s.replace(/直管/g, "ちょっかん");
+      s = s.replace(/本管/g, "ほんかん");
+      s = s.replace(/枝管/g, "えだかん");
+      s = s.replace(/排水管/g, "はいすいかん");
+      s = s.replace(/給水管/g, "きゅうすいかん");
+      s = s.replace(/通気管/g, "つうきかん");
+      s = s.replace(/冷媒管/g, "れいばいかん");
+      s = s.replace(/導管/g, "どうかん");
 
       // 【コンクリート工事】
       s = s.replace(/せき板|堰板/g, "せきいた");
