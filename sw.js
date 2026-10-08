@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.2.1-network-first';
+const CACHE_NAME = 'cbt-arch-v3.2.3-balanced-logic';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

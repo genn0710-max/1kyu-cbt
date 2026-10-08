@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>1級建築施工管理技士補 Ver.3.2.1</title>
+  <title>1級建築施工管理技士補 Ver.3.2.3</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,9 +13,9 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- 600問問題バンク -->
-  <script src="questions_bank.js?v=3.2.1"></script>
+  <script src="questions_bank.js?v=3.2.3"></script>
   <!-- 即解ワード暗記バンク -->
-  <script src="word_bank.js?v=3.2.1"></script>
+  <script src="word_bank.js?v=3.2.3"></script>
   <!-- モバイル & PWA (iOS / Android) メタタグ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -87,7 +87,7 @@
         <h2 class="text-xl font-bold text-white mb-1">関係者・限定試用版認証</h2>
         <div class="flex items-center justify-center gap-2 mb-4">
           <span class="text-xs text-amber-400 font-medium">1級建築施工管理技士補 600問実戦CBT</span>
-          <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-2.5 py-0.5 rounded-full font-bold font-mono">Ver.3.2.1</span>
+          <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-2.5 py-0.5 rounded-full font-bold font-mono">Ver.3.2.2</span>
         </div>
         
         <p class="text-xs text-slate-300 text-left mb-6 leading-relaxed bg-slate-950/70 p-3.5 rounded-xl border border-slate-800">
@@ -130,7 +130,7 @@
         </div>
 
         <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-          <span>追跡Ver: <strong class="text-emerald-400 font-mono">Ver.3.2.1</strong></span>
+          <span>追跡Ver: <strong class="text-emerald-400 font-mono">Ver.3.2.2</strong></span>
           <button type="button" @click="reloadApp" class="text-sky-400 hover:text-sky-300 underline text-[11px] flex items-center gap-1 font-medium">
             <span>🔄</span> キャッシュ消去して最新版更新
           </button>
@@ -163,7 +163,7 @@
             <!-- 累積Verバッジ -->
             <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-3 py-0.5 rounded-full font-bold shadow-sm font-mono flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Ver.3.2.1
+              Ver.3.2.2
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               600問完全網羅
@@ -407,7 +407,22 @@
             </div>
 
             <!-- 問題文 -->
+            <!-- 問題文 ＆ 設問タイプ明示バッジ -->
             <div class="mb-5 flex-1">
+              <div class="mb-2 flex items-center gap-2">
+                <span v-if="getQuestionType(currentExamQuestion) === 'futekitou'" 
+                      class="bg-rose-950/80 text-rose-300 border border-rose-700/80 text-[11px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                  <span>🚨</span> 最も【不適当】なものを選択
+                </span>
+                <span v-else-if="getQuestionType(currentExamQuestion) === 'hanyou_nai'" 
+                      class="bg-amber-950/80 text-amber-300 border border-amber-700/80 text-[11px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                  <span>⚠️</span> 【該当しない】ものを選択
+                </span>
+                <span v-else 
+                      class="bg-emerald-950/80 text-emerald-300 border border-emerald-700/80 text-[11px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                  <span>💡</span> 最も【適当・正しい】ものを選択
+                </span>
+              </div>
               <h2 class="text-base md:text-lg font-medium text-slate-100 leading-relaxed whitespace-pre-wrap select-text">
                 {{ currentExamQuestion.question }}
               </h2>
@@ -430,8 +445,12 @@
                 
                 <!-- 濃縮20分版での正誤判定バッジ -->
                 <template v-if="selectedExamMode === 'intensive20' && examUserAnswers[currentExamIndex] !== null">
-                  <span v-if="idx === currentExamQuestion.correctIndex" class="text-emerald-400 font-bold text-xs shrink-0 self-center">✓ 正解</span>
-                  <span v-else-if="examUserAnswers[currentExamIndex] === idx" class="text-rose-400 font-bold text-xs shrink-0 self-center">✕ 不正解</span>
+                  <span v-if="idx === currentExamQuestion.correctIndex" class="text-emerald-400 font-bold text-xs shrink-0 self-center">
+                    ✓ {{ getQuestionType(currentExamQuestion) === 'futekitou' ? '正答（不適当な記述）' : getQuestionType(currentExamQuestion) === 'hanyou_nai' ? '正答（該当しない項目）' : '正答（適当な記述）' }}
+                  </span>
+                  <span v-else-if="examUserAnswers[currentExamIndex] === idx" class="text-rose-400 font-bold text-xs shrink-0 self-center">
+                    ✕ {{ getQuestionType(currentExamQuestion) === 'futekitou' ? '誤答（適当な記述）' : getQuestionType(currentExamQuestion) === 'hanyou_nai' ? '誤答（該当する項目）' : '誤答（不適当な記述）' }}
+                  </span>
                 </template>
               </button>
             </div>
@@ -441,7 +460,9 @@
                  class="space-y-3 pt-3 border-t border-slate-800 mb-4 animate-fade-in">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-slate-950 border border-emerald-600/40 rounded-xl p-3 text-xs">
-                  <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">🟢 不適当である理由・正解の論理</h4>
+                  <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">
+                    {{ getQuestionType(currentExamQuestion) === 'futekitou' ? '🟢 なぜ不適当なのか・正解の論理' : getQuestionType(currentExamQuestion) === 'hanyou_nai' ? '🟢 なぜ該当しないのか・正解の論理' : '🟢 なぜ適当なのか・他肢の不適当理由' }}
+                  </h4>
                   <p class="text-slate-200 leading-relaxed whitespace-pre-wrap">{{ currentExamQuestion.explanation }}</p>
                 </div>
                 <div class="bg-slate-950 border border-amber-600/40 rounded-xl p-3 text-xs">
@@ -712,10 +733,10 @@
                     </span>
                     <span class="flex-1 leading-relaxed">{{ opt }}</span>
                     <span v-if="optIdx === item.q.correctIndex" class="text-emerald-400 font-bold shrink-0 text-[11px]">
-                      ⭕ 正解
+                      ⭕ {{ getQuestionType(item.q) === 'futekitou' ? '正答（不適当な記述）' : getQuestionType(item.q) === 'hanyou_nai' ? '正答（該当しない項目）' : '正答（適当な記述）' }}
                     </span>
                     <span v-else-if="optIdx === item.userAnswer && !item.isCorrect" class="text-rose-400 font-bold shrink-0 text-[11px]">
-                      ❌ あなたの回答
+                      ❌ あなたの回答（誤答）
                     </span>
                   </div>
                 </div>
@@ -728,7 +749,9 @@
                 <!-- 正解根拠 & 現場知見 -->
                 <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl space-y-2 text-slate-300">
                   <p class="leading-relaxed">
-                    <strong class="text-emerald-400 font-semibold block mb-1">💡 不適当である理由・正解の論理:</strong>
+                    <strong class="text-emerald-400 font-semibold block mb-1">
+                      💡 {{ getQuestionType(item.q) === 'futekitou' ? 'なぜ不適当なのか・正解の論理:' : getQuestionType(item.q) === 'hanyou_nai' ? 'なぜ該当しないのか・正解の論理:' : 'なぜ適当なのか・他肢の不適当理由:' }}
+                    </strong>
                     {{ item.q.explanation }}
                   </p>
                   <p v-if="item.q.fieldReality" class="text-slate-400 text-[11px] leading-relaxed border-t border-slate-800/80 pt-2">
@@ -1223,7 +1246,23 @@
             </div>
           </div>
 
-          <div class="mb-6">
+          <div class="mb-5">
+            <!-- 設問タイプ（不適当 / 適当 / 該当しない）明示バッジ -->
+            <div class="mb-2 flex items-center gap-2">
+              <span v-if="getQuestionType(currentQuestion) === 'futekitou'" 
+                    class="bg-rose-950/80 text-rose-300 border border-rose-700/80 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                <span>🚨</span> 最も【不適当】なものを選択
+              </span>
+              <span v-else-if="getQuestionType(currentQuestion) === 'hanyou_nai'" 
+                    class="bg-amber-950/80 text-amber-300 border border-amber-700/80 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                <span>⚠️</span> 【該当しない】ものを選択
+              </span>
+              <span v-else 
+                    class="bg-emerald-950/80 text-emerald-300 border border-emerald-700/80 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                <span>💡</span> 最も【適当・正しい】ものを選択
+              </span>
+            </div>
+
             <h2 class="text-base md:text-lg font-medium text-slate-100 leading-relaxed whitespace-pre-wrap select-text">
               Q{{ currentQuizIndex + 1 }}. {{ currentQuestion.question }}
             </h2>
@@ -1242,35 +1281,58 @@
                 {{ idx + 1 }}
               </div>
               <span class="leading-relaxed flex-1">{{ option }}</span>
-              <span v-if="hasAnswered && idx === currentQuestion.correctIndex" class="text-emerald-400 font-bold text-xs shrink-0 self-center">✓ 正解</span>
-              <span v-else-if="hasAnswered && selectedOption === idx && idx !== currentQuestion.correctIndex" class="text-rose-400 font-bold text-xs shrink-0 self-center">✕ 不正解</span>
+              <!-- 正誤判定バッジ（不適当・適当・該当しないの区別を完全明示） -->
+              <template v-if="hasAnswered">
+                <span v-if="idx === currentQuestion.correctIndex" class="text-emerald-400 font-bold text-xs shrink-0 self-center flex items-center gap-1">
+                  <span>✓</span>
+                  <span>{{ getQuestionType(currentQuestion) === 'futekitou' ? '正答（不適当な記述）' : getQuestionType(currentQuestion) === 'hanyou_nai' ? '正答（該当しない項目）' : '正答（適当な記述）' }}</span>
+                </span>
+                <span v-else-if="selectedOption === idx" class="text-rose-400 font-bold text-xs shrink-0 self-center flex items-center gap-1">
+                  <span>✕</span>
+                  <span>{{ getQuestionType(currentQuestion) === 'futekitou' ? '誤答（適当な記述）' : getQuestionType(currentQuestion) === 'hanyou_nai' ? '誤答（該当する項目）' : '誤答（不適当な記述）' }}</span>
+                </span>
+                <span v-else class="text-slate-500 text-xs shrink-0 self-center">
+                  {{ getQuestionType(currentQuestion) === 'futekitou' ? '（適当な記述）' : getQuestionType(currentQuestion) === 'hanyou_nai' ? '（該当する項目）' : '（不適当な記述）' }}
+                </span>
+              </template>
             </button>
           </div>
 
           <div v-if="hasAnswered" class="space-y-4 pt-4 border-t border-slate-800">
-            <div class="flex items-center justify-between p-3 rounded-xl border"
-                 :class="selectedOption === currentQuestion.correctIndex ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300' : 'bg-rose-950/30 border-rose-800/60 text-rose-300'">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">{{ selectedOption === currentQuestion.correctIndex ? '🎉' : '💥' }}</span>
-                <span class="font-bold text-sm">
-                  {{ selectedOption === currentQuestion.correctIndex ? '正解！' : '不正解' }}
-                  <span class="text-xs font-normal ml-2 opacity-90">正解は 【 {{ currentQuestion.correctIndex + 1 }} 】 です</span>
-                </span>
+            <div class="flex items-center justify-between p-3.5 rounded-xl border"
+                 :class="selectedOption === currentQuestion.correctIndex ? 'bg-emerald-950/40 border-emerald-600/70 text-emerald-200' : 'bg-rose-950/40 border-rose-600/70 text-rose-200'">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xl">{{ selectedOption === currentQuestion.correctIndex ? '🎉' : '💥' }}</span>
+                <div>
+                  <div class="font-bold text-sm">
+                    {{ selectedOption === currentQuestion.correctIndex ? '正解！ 設問の求める正答を選択しました' : '不正解（誤った回答です）' }}
+                  </div>
+                  <div class="text-xs mt-0.5" :class="selectedOption === currentQuestion.correctIndex ? 'text-emerald-300/90' : 'text-rose-300/90'">
+                    <span v-if="selectedOption === currentQuestion.correctIndex">
+                      正答は <strong>【 肢{{ currentQuestion.correctIndex + 1 }} 】</strong> です（{{ getQuestionType(currentQuestion) === 'futekitou' ? 'この記述が不適当' : getQuestionType(currentQuestion) === 'hanyou_nai' ? 'この項目が該当しない' : 'この記述が適当' }}）。
+                    </span>
+                    <span v-else>
+                      あなたの回答【 肢{{ selectedOption !== null ? selectedOption + 1 : '未選択' }} 】は誤りです。設問の正答は <strong>【 肢{{ currentQuestion.correctIndex + 1 }} 】</strong> です。
+                    </span>
+                  </div>
+                </div>
               </div>
               
               <button 
                 @click="toggleBookmark(currentQuestion)" 
-                class="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors"
+                class="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors shrink-0"
                 :class="currentQuestion.isBookmarked ? 'bg-amber-500/20 border-amber-600/60 text-amber-300 font-semibold' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'">
                 <span>{{ currentQuestion.isBookmarked ? '★ 要復習登録済' : '☆ 要復習に追加' }}</span>
               </button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div class="bg-slate-950 border border-emerald-600/40 rounded-xl p-4 shadow-sm">
+              <div class="bg-slate-950 border border-emerald-600/50 rounded-xl p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">不適当である理由・正解の論理</h3>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                    {{ getQuestionType(currentQuestion) === 'futekitou' ? '🟢 なぜ不適当なのか・正解の論理' : getQuestionType(currentQuestion) === 'hanyou_nai' ? '🟢 なぜ該当しないのか・正解の論理' : '🟢 なぜ適当なのか・他肢が不適当な理由' }}
+                  </h3>
                 </div>
                 <p class="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap select-text">
                   {{ currentQuestion.explanation }}
@@ -1382,15 +1444,16 @@
               <div class="flex items-center justify-between gap-2 mb-2.5">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-[11px] bg-slate-800 text-sky-400 px-2 py-0.5 rounded-full font-medium">{{ q.chapterName || q.category }}</span>
-                  <span class="text-[11px] font-mono bg-rose-950/80 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full font-bold">
-                    正解（不適当）: 肢{{ q.correctIndex + 1 }}
+                  <span class="text-[11px] font-mono px-2 py-0.5 rounded-full font-bold border"
+                        :class="getQuestionType(q) === 'futekitou' ? 'bg-rose-950/80 text-rose-300 border-rose-800' : getQuestionType(q) === 'hanyou_nai' ? 'bg-amber-950/80 text-amber-300 border-amber-800' : 'bg-emerald-950/80 text-emerald-300 border-emerald-800'">
+                    正答: 肢{{ q.correctIndex + 1 }}（{{ getQuestionType(q) === 'futekitou' ? '不適当' : getQuestionType(q) === 'hanyou_nai' ? '該当しない' : '適当' }}）
                   </span>
                   <!-- 再生中フェーズインジケーター -->
                   <span v-if="activeSpeechCardId === q.id" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
                     <span>🔊</span>
                     <span v-if="activeSpeechPhase === 'question'">問題文を再生中</span>
                     <span v-else-if="activeSpeechPhase === 'options'">選択肢を提示中</span>
-                    <span v-else-if="activeSpeechPhase === 'answer'">不適当な肢を指摘中</span>
+                    <span v-else-if="activeSpeechPhase === 'answer'">正解肢を指摘中</span>
                     <span v-else-if="activeSpeechPhase === 'explanation'">解説を再生中</span>
                     <span v-else-if="activeSpeechPhase === 'trap'">引っ掛け罠を解説中</span>
                     <span v-else-if="activeSpeechPhase === 'field'">現場知見を解説中</span>
@@ -1427,7 +1490,9 @@
                 :class="activeSpeechCardId === q.id && activeSpeechPhase === 'options' ? 'bg-indigo-950/30 border-indigo-400/80 ring-2 ring-indigo-400/40' : 'bg-slate-950/40 border-slate-800/60'">
                 <div class="text-[10px] font-bold text-slate-400 flex items-center justify-between mb-1">
                   <span class="flex items-center gap-1"><span>🔢</span> 4つの選択肢</span>
-                  <span class="text-[10px] text-slate-500">※最も不適当な肢が正解</span>
+                  <span class="text-[10px] text-slate-500">
+                    ※{{ getQuestionType(q) === 'futekitou' ? '最も不適当な肢が正答' : getQuestionType(q) === 'hanyou_nai' ? '該当しない肢が正答' : '最も適当な肢が正答' }}
+                  </span>
                 </div>
                 <div 
                   v-for="(opt, oIdx) in q.options" 
@@ -1445,22 +1510,23 @@
                       肢{{ oIdx + 1 }}
                     </span>
                     <span class="flex-1 leading-relaxed">{{ opt }}</span>
-                    <span v-if="oIdx === q.correctIndex" class="text-[10px] bg-rose-900/90 text-rose-200 border border-rose-600 px-1.5 py-0.5 rounded shrink-0 font-bold">
-                      ❌ 不適当（正解）
+                    <span v-if="oIdx === q.correctIndex" class="text-[10px] px-1.5 py-0.5 rounded shrink-0 font-bold border"
+                          :class="getQuestionType(q) === 'futekitou' ? 'bg-rose-900/90 text-rose-200 border-rose-600' : getQuestionType(q) === 'hanyou_nai' ? 'bg-amber-900/90 text-amber-200 border-amber-600' : 'bg-emerald-900/90 text-emerald-200 border-emerald-600'">
+                      {{ getQuestionType(q) === 'futekitou' ? '❌ 不適当（正答）' : getQuestionType(q) === 'hanyou_nai' ? '⚠️ 該当しない（正答）' : '⭕️ 適当（正答）' }}
                     </span>
                     <span v-else class="text-[10px] text-slate-500 shrink-0">
-                      ⭕️ 適当
+                      {{ getQuestionType(q) === 'futekitou' ? '⭕️ 適当' : getQuestionType(q) === 'hanyou_nai' ? '⭕️ 該当する' : '❌ 不適当' }}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <!-- 3. 不適当である理由・正解の論理（解説） -->
+              <!-- 3. なぜ不適当なのか・適当なのか（正解の論理） -->
               <div 
                 class="rounded-xl p-2.5 mb-2 transition-all border text-xs leading-relaxed"
                 :class="activeSpeechCardId === q.id && activeSpeechPhase === 'explanation' ? 'bg-emerald-950/60 border-emerald-400 ring-2 ring-emerald-400/50 text-emerald-100' : 'bg-slate-950/60 border-slate-800 text-slate-300'">
                 <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1 text-[11px]">
-                  <span>💡</span> 不適当である理由（正解の論理）:
+                  <span>💡</span> {{ getQuestionType(q) === 'futekitou' ? 'なぜ不適当なのか・正解の論理:' : getQuestionType(q) === 'hanyou_nai' ? 'なぜ該当しないのか・正解の論理:' : 'なぜ適当なのか・他肢の不適当理由:' }}
                 </div>
                 <div class="text-xs text-slate-200 leading-relaxed">
                   {{ q.explanation }}
@@ -1710,7 +1776,7 @@
             :class="qrMode === 'tunnel' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'"
             class="py-1.5 rounded-lg transition-all flex flex-col items-center justify-center">
             <span>⚡ 最新即時</span>
-            <span class="text-[9px] font-mono opacity-90">Ver.3.2.1</span>
+            <span class="text-[9px] font-mono opacity-90">Ver.3.2.2</span>
           </button>
           <button 
             type="button"
@@ -1731,7 +1797,7 @@
         </div>
 
         <p class="text-[11px] text-slate-300 leading-snug">
-          <span v-if="qrMode === 'tunnel'" class="text-sky-300 font-bold">⚡ リアルタイム配信中：スキャンすると最新Ver.3.2.1が即座に起動します。</span>
+          <span v-if="qrMode === 'tunnel'" class="text-sky-300 font-bold">⚡ リアルタイム配信中：スキャンすると最新Ver.3.2.2が即座に起動します。</span>
           <span v-else-if="qrMode === 'wifi'" class="text-emerald-300 font-bold">📶 自宅Wi-Fi直結：Macと同一Wi-Fiで外部通信なしで爆速動作します。</span>
           <span v-else class="text-purple-300 font-bold">🌐 GitHub Pages公開版：※GitHubへファイルをアップロード後に反映されます。</span>
         </p>
@@ -1749,7 +1815,7 @@
           <p>🔑 <strong class="text-amber-200">合言葉（パスコード）:</strong> <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">2026</code> または <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">cbt2026</code></p>
           <p>💡 スマホの「ホーム画面に追加」を行うと全画面の専用アプリとして動作します。</p>
           <p class="text-[10px] text-slate-400 border-t border-amber-800/30 pt-1">
-            追跡バージョン: <span class="font-mono text-amber-300 font-bold">1級建築施工管理技士補 Ver.3.2.1</span>（PC・スマホ共通）
+            追跡バージョン: <span class="font-mono text-amber-300 font-bold">1級建築施工管理技士補 Ver.3.2.2</span>（PC・スマホ共通）
           </p>
         </div>
 
@@ -1765,16 +1831,16 @@
     <footer class="mt-8 mb-4 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1 select-none">
       <div class="font-medium text-slate-300 text-sm">1級建築施工管理技士補</div>
       <div class="text-xs text-slate-400 font-mono">
-        【PC・スマホ合致 追跡バージョン】 <span class="text-emerald-400 font-bold">Ver.3.2.1</span>
+        【PC・スマホ合致 追跡バージョン】 <span class="text-emerald-400 font-bold">Ver.3.2.2</span>
       </div>
-      <div class="text-[10px] text-slate-600">※600問完全網羅 / 4肢可視化同期 / Web Audio完全アンロック / Android 20秒切断対策チャンクエンジン</div>
+      <div class="text-[10px] text-slate-600">※600問完全網羅 / 4肢可視化同期 / Web Audio完全アンロック / 超高精度・建築発音辞書エンジン</div>
     </footer>
 
     </div> <!-- /v-else メインコンテンツ -->
 
   </div>
 
-  <script src="app.js?v=3.2.1"></script>
+  <script src="app.js?v=3.2.2"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -1789,7 +1855,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.2.1')
+        navigator.serviceWorker.register('./sw.js?v=3.2.3')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック
