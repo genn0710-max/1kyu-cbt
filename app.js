@@ -1,4 +1,4 @@
-const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
+const { createApp, ref, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
 
 const DB_NAME = 'ArchConstructionCBT_DB_v4';
 const DB_VERSION = 1;
@@ -54,7 +54,7 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
-    const appVersion = ref('Ver.3.2.3');
+    const appVersion = ref('Ver.3.2.4');
 
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
@@ -1033,9 +1033,24 @@ createApp({
       });
     }
 
-    // 読み上げ中のカードIDと現在フェーズ（画面のリアルタイム可視化連動）
+    // 読み上げ中のカードIDと現在フェーズ・選択肢インデックス（画面のリアルタイム可視化＆自動スクロール追従連動）
     const activeSpeechCardId = ref(null);
-    const activeSpeechPhase = ref(''); // 'question' | 'options' | 'answer' | 'explanation' | 'trap' | 'field'
+    const activeSpeechPhase = ref(''); // 'question' | 'option' | 'thinking' | 'answer' | 'explanation' | 'trap' | 'field' | 'glossary'
+    const activeSpeechOptionIndex = ref(null); // 0 | 1 | 2 | 3
+
+    // 読み上げ位置へのスムーズ自動スクロール追従関数
+    const scrollToSpeechTarget = (targetId, block = 'nearest') => {
+      nextTick(() => {
+        try {
+          const el = typeof targetId === 'string' ? document.getElementById(targetId) : targetId;
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: block, inline: 'nearest' });
+          }
+        } catch (e) {
+          console.warn('[Speech Scroll] error:', e);
+        }
+      });
+    };
 
     let currentSpeechSessionId = 0;
     let activeUtterance = null;
@@ -1082,6 +1097,7 @@ createApp({
       window.__cbtUtterance = null;
       activeSpeechCardId.value = null;
       activeSpeechPhase.value = '';
+      activeSpeechOptionIndex.value = null;
       releaseWakeLock();
     };
 
@@ -1304,7 +1320,7 @@ createApp({
       playNextChunk();
     };
 
-    // 現在の単語を読み上げる（手動ボタン）
+    // 現在の単語を読み上げる（手動ボタン：ハイライト追従連動）
     const speakCurrentWord = () => {
       if (isSpeaking.value && !isAutoPlay.value) {
         stopSpeech();
@@ -1313,35 +1329,86 @@ createApp({
       const w = currentWord.value;
       if (!w || !w.question) return;
 
-      let speechContent = '';
+      activeSpeechCardId.value = w.id;
       if (!hasAnsweredWord.value) {
-        const choicesText = currentWordChoices.value.map((c, i) => `選択肢${i + 1}、${c}。`).join(' ');
-        speechContent = `問題。${w.category}、${w.topic}。${w.question}。${choicesText}`;
+        // 問題文読み上げ & ハイライト追従
+        activeSpeechPhase.value = 'question';
+        activeSpeechOptionIndex.value = null;
+        scrollToSpeechTarget('word-card', 'center');
+        scrollToSpeechTarget('word-q-box', 'nearest');
+
+        const choices = currentWordChoices.value;
+        const qText = `問題。${w.category}、${w.topic}。${w.question}。`;
+        speakText(qText, () => {
+          if (activeSpeechCardId.value !== w.id) return;
+          const narrateOpts = (idx) => {
+            if (activeSpeechCardId.value !== w.id) return;
+            if (idx >= choices.length) {
+              activeSpeechPhase.value = '';
+              activeSpeechOptionIndex.value = null;
+              activeSpeechCardId.value = null;
+              return;
+            }
+            activeSpeechPhase.value = 'option';
+            activeSpeechOptionIndex.value = idx;
+            scrollToSpeechTarget(`word-opt-${idx}`, 'nearest');
+            speakText(`選択肢${idx + 1}、${choices[idx]}。`, () => {
+              narrateOpts(idx + 1);
+            });
+          };
+          narrateOpts(0);
+        });
       } else {
         const isCorrect = selectedWordChoice.value === w.answer;
         const resultPrefix = isCorrect 
           ? 'お見事、正解です！' 
           : `残念、不正解です。あなたの回答「${selectedWordChoice.value || '未選択'}」は誤りです。`;
-        const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
-        const hintText = w.hint ? `ポイント。${w.hint}。` : '';
-        speechContent = `${resultPrefix}正解の基準値は、${w.answer}です。${glossaryText}${hintText}`;
+        const cIdx = currentWordChoices.value.indexOf(w.answer);
+        activeSpeechPhase.value = 'answer';
+        activeSpeechOptionIndex.value = cIdx >= 0 ? cIdx : null;
+        if (cIdx >= 0) scrollToSpeechTarget(`word-opt-${cIdx}`, 'nearest');
+
+        const ansText = `${resultPrefix}正解の基準値は、${w.answer}です。`;
+        speakText(ansText, () => {
+          if (activeSpeechCardId.value !== w.id) return;
+          activeSpeechOptionIndex.value = null;
+          if (w.termGlossary || w.hint) {
+            showWordGlossary.value = true;
+            activeSpeechPhase.value = 'explanation';
+            scrollToSpeechTarget('word-glossary-box', 'nearest');
+            const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
+            const hintText = w.hint ? `ポイント。${w.hint}。` : '';
+            speakText(`${glossaryText}${hintText}`, () => {
+              activeSpeechCardId.value = null;
+              activeSpeechPhase.value = '';
+            });
+          } else {
+            activeSpeechCardId.value = null;
+            activeSpeechPhase.value = '';
+          }
+        });
       }
-      speakText(speechContent);
     };
 
-    // 項目を指定して読み上げる（振り返り一覧用）
+    // 項目を指定して読み上げる（振り返り一覧用：ハイライト追従連動）
     const speakItem = (w) => {
       if (isSpeaking.value && !isReviewAutoPlay.value) {
         stopSpeech();
         return;
       }
+      activeSpeechCardId.value = w.id;
+      scrollToSpeechTarget(`word-review-item-${w.id}`, 'center');
       const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
       const hintText = w.hint ? `ポイント。${w.hint}。` : '';
       const speechContent = `${w.category}。${w.term || w.topic}。問題。${w.question}。正解は、${w.answer}です。${glossaryText}${hintText}`;
-      speakText(speechContent);
+      speakText(speechContent, () => {
+        if (activeSpeechCardId.value === w.id) {
+          activeSpeechCardId.value = null;
+        }
+      });
     };
 
-    // 🚗 車両通勤・ハンズフリー自動連続耳学モード
+    // 🚗 車両通勤・ハンズフリー自動連続耳学モード（ハイライト追従連動）
     const toggleAutoPlay = () => {
       if (isAutoPlay.value) {
         stopSpeech();
@@ -1356,18 +1423,28 @@ createApp({
     const playWordAutoCycle = () => {
       if (!isAutoPlay.value || isWordSessionFinished.value) {
         isAutoPlay.value = false;
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
         return;
       }
 
       const w = currentWord.value;
       if (!w || !w.question) return;
 
-      // 1. 問題を読み上げる
+      activeSpeechCardId.value = w.id;
+      activeSpeechOptionIndex.value = null;
+      scrollToSpeechTarget('word-card', 'center');
+
+      // 1. 問題を読み上げる & ハイライト追従
+      activeSpeechPhase.value = 'question';
+      scrollToSpeechTarget('word-q-box', 'nearest');
       const qText = `第${currentWordIndex.value + 1}問。${w.category}。${w.topic}。問題。${w.question}。`;
       speakText(qText, () => {
         if (!isAutoPlay.value) return;
 
         // 2. シンキングタイム（2.2秒の間）
+        activeSpeechPhase.value = 'thinking';
         autoPlayTimer = setTimeout(() => {
           if (!isAutoPlay.value) return;
 
@@ -1375,40 +1452,65 @@ createApp({
           hasAnsweredWord.value = true;
           selectedWordChoice.value = w.answer;
 
-          // 3. 正解と用語解説・急所を読み上げる
-          const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
-          const hintText = w.hint ? `ポイント。${w.hint}。` : '';
-          const aText = `正解は、${w.answer}です。${glossaryText}${hintText}`;
+          const cIdx = currentWordChoices.value.indexOf(w.answer);
+          activeSpeechPhase.value = 'answer';
+          activeSpeechOptionIndex.value = cIdx >= 0 ? cIdx : null;
+          if (cIdx >= 0) {
+            scrollToSpeechTarget(`word-opt-${cIdx}`, 'nearest');
+          }
 
+          // 3. 正解と用語解説・急所を読み上げる
+          const aText = `正解は、${w.answer}です。`;
           speakText(aText, () => {
             if (!isAutoPlay.value) return;
+            activeSpeechOptionIndex.value = null;
 
-            // 4. 少し間を置いて次の問題へ
-            autoPlayTimer = setTimeout(() => {
-              if (!isAutoPlay.value) return;
-              if (currentWordIndex.value < wordSessionWords.value.length - 1) {
-                nextWord();
-                playWordAutoCycle();
-              } else {
-                // セッション完了 ➔ 自動で振り返り耳学へバトンタッチ！
-                isWordSessionFinished.value = true;
-                isAutoPlay.value = false;
-                const sectorLabel = wordFilterCategory.value === 'すべて' ? '全工種' : wordFilterCategory.value;
-                const finishMsg = `${sectorLabel}セクタの暗記演習が完了しました。続けて、セクタの振り返り耳学解説を開始します。`;
-                
-                speakText(finishMsg, () => {
-                  setTimeout(() => {
-                    toggleReviewAutoPlay();
-                  }, 1200);
-                });
-              }
-            }, 1800);
+            if (w.termGlossary || w.hint) {
+              showWordGlossary.value = true;
+              activeSpeechPhase.value = 'explanation';
+              scrollToSpeechTarget('word-glossary-box', 'nearest');
+              const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
+              const hintText = w.hint ? `ポイント。${w.hint}。` : '';
+
+              speakText(`${glossaryText}${hintText}`, () => {
+                if (!isAutoPlay.value) return;
+                finishWordStep();
+              });
+            } else {
+              finishWordStep();
+            }
           });
         }, 2200);
       });
     };
 
-    // 🚗 振り返り画面での「連続耳学モード（音声解説リスニング）」
+    const finishWordStep = () => {
+      activeSpeechPhase.value = '';
+      activeSpeechOptionIndex.value = null;
+      // 4. 少し間を置いて次の問題へ
+      autoPlayTimer = setTimeout(() => {
+        if (!isAutoPlay.value) return;
+        if (currentWordIndex.value < wordSessionWords.value.length - 1) {
+          nextWord();
+          playWordAutoCycle();
+        } else {
+          // セッション完了 ➔ 自動で振り返り耳学へバトンタッチ！
+          isWordSessionFinished.value = true;
+          isAutoPlay.value = false;
+          activeSpeechCardId.value = null;
+          const sectorLabel = wordFilterCategory.value === 'すべて' ? '全工種' : wordFilterCategory.value;
+          const finishMsg = `${sectorLabel}セクタの暗記演習が完了しました。続けて、セクタの振り返り耳学解説を開始します。`;
+          
+          speakText(finishMsg, () => {
+            setTimeout(() => {
+              toggleReviewAutoPlay();
+            }, 1200);
+          });
+        }
+      }, 1800);
+    };
+
+    // 🚗 振り返り画面での「連続耳学モード（音声解説リスニング & ハイライト追従）」
     const toggleReviewAutoPlay = () => {
       if (isReviewAutoPlay.value) {
         stopSpeech();
@@ -1425,12 +1527,16 @@ createApp({
       const list = reviewedWordList.value;
       if (!isReviewAutoPlay.value || list.length === 0 || currentReviewSpeechIndex.value >= list.length) {
         isReviewAutoPlay.value = false;
+        activeSpeechCardId.value = null;
         speakText('セクタの振り返り耳学がすべて完了しました。大変お疲れ様でした。');
         return;
       }
 
       const item = list[currentReviewSpeechIndex.value];
       const w = item.word;
+      activeSpeechCardId.value = w.id;
+      scrollToSpeechTarget(`word-review-item-${w.id}`, 'center');
+
       const num = currentReviewSpeechIndex.value + 1;
       const statusText = item.record.isCorrect ? '正解した項目です。' : '見直しが必要な項目です。';
       const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
@@ -1448,6 +1554,7 @@ createApp({
             playReviewAutoCycle();
           } else {
             isReviewAutoPlay.value = false;
+            activeSpeechCardId.value = null;
             speakText('セクタの振り返り耳学がすべて終了しました。');
           }
         }, 1500);
@@ -1590,58 +1697,158 @@ createApp({
       }
     };
 
+    // 🎙️ 実戦テスト問題の同期ステップ読み上げ（問題 → 各肢 → シンキング → 正解 → 解説 → 罠 → 現場知見）
+    const narrateExamQuestion = (q, onEnd) => {
+      if (!q || !q.question) {
+        if (onEnd) onEnd();
+        return;
+      }
+      activeSpeechCardId.value = q.id;
+      activeSpeechOptionIndex.value = null;
+      scrollToSpeechTarget('exam-card', 'center');
+
+      const qNum = currentExamIndex.value + 1;
+      const cat = q.chapterName || q.category || '';
+      const opts = q.options || [];
+
+      // Step 1: 問題文の読み上げ & ハイライト追従
+      activeSpeechPhase.value = 'question';
+      scrollToSpeechTarget('exam-q-box', 'nearest');
+      const qSpeech = `第${qNum}問。${cat}。問題。${q.question}。`;
+
+      speakText(qSpeech, () => {
+        if (activeSpeechCardId.value !== q.id) return;
+
+        // Step 2: 選択肢を1肢ずつ順番に読み上げ ＆ 各肢をハイライト追従
+        const narrateOpts = (idx) => {
+          if (activeSpeechCardId.value !== q.id) return;
+          if (idx >= opts.length) {
+            activeSpeechOptionIndex.value = null;
+            proceedToAnswer();
+            return;
+          }
+          activeSpeechPhase.value = 'option';
+          activeSpeechOptionIndex.value = idx;
+          scrollToSpeechTarget(`exam-opt-${idx}`, 'nearest');
+          const optSpeech = `選択肢${idx + 1}番、${opts[idx]}。`;
+          speakText(optSpeech, () => {
+            narrateOpts(idx + 1);
+          });
+        };
+
+        const proceedToAnswer = () => {
+          if (activeSpeechCardId.value !== q.id) return;
+          // Step 3: シンキングタイム (2.2秒)
+          activeSpeechPhase.value = 'thinking';
+          examAutoTimer = setTimeout(() => {
+            if (activeSpeechCardId.value !== q.id) return;
+
+            // 画面上の回答を正解選択肢にセットして視覚的に反映
+            examUserAnswers.value[currentExamIndex.value] = q.correctIndex;
+
+            // Step 4: 正解発表 & 正解肢ハイライト追従
+            activeSpeechPhase.value = 'answer';
+            activeSpeechOptionIndex.value = q.correctIndex;
+            scrollToSpeechTarget(`exam-opt-${q.correctIndex}`, 'nearest');
+
+            const answerSpeech = getAnswerSpeechText(q);
+
+            speakText(answerSpeech, () => {
+              if (activeSpeechCardId.value !== q.id) return;
+              activeSpeechOptionIndex.value = null;
+
+              // 濃縮20分版の場合は解説・罠・現場知見もハイライト追従して順次読み上げ
+              if (selectedExamMode.value === 'intensive20') {
+                activeSpeechPhase.value = 'explanation';
+                scrollToSpeechTarget('exam-exp-card', 'nearest');
+                const expSpeech = q.explanation ? `解説。${q.explanation}。` : '';
+
+                speakText(expSpeech, () => {
+                  if (activeSpeechCardId.value !== q.id) return;
+
+                  activeSpeechPhase.value = 'trap';
+                  scrollToSpeechTarget('exam-trap-card', 'nearest');
+                  const trapSpeech = q.trapNote ? `引っ掛け罠。${q.trapNote}。` : '';
+
+                  speakText(trapSpeech, () => {
+                    if (activeSpeechCardId.value !== q.id) return;
+
+                    activeSpeechPhase.value = 'field';
+                    scrollToSpeechTarget('exam-field-card', 'nearest');
+                    const fieldSpeech = q.fieldReality ? `現場知見。${q.fieldReality}。` : '';
+
+                    speakText(fieldSpeech, () => {
+                      if (activeSpeechCardId.value === q.id) {
+                        activeSpeechPhase.value = '';
+                        activeSpeechOptionIndex.value = null;
+                      }
+                      if (onEnd) onEnd();
+                    });
+                  });
+                });
+              } else {
+                activeSpeechPhase.value = '';
+                activeSpeechOptionIndex.value = null;
+                if (onEnd) onEnd();
+              }
+            });
+          }, 2200);
+        };
+
+        narrateOpts(0);
+      });
+    };
+
     const playExamAutoCycle = () => {
       if (!isExamAutoPlay.value || !isExamStarted.value || isExamFinished.value) {
         isExamAutoPlay.value = false;
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
         return;
       }
 
       const q = currentExamQuestion.value;
       if (!q || !q.question) return;
 
-      const qNum = currentExamIndex.value + 1;
-      const cat = q.chapterName || q.category || '';
-      const opts = q.options || [];
-
-      // 1. 問題文と選択肢の読み上げ
-      let speech = `第${qNum}問。${cat}。問題。${q.question}。`;
-      opts.forEach((opt, i) => {
-        speech += `選択肢${i + 1}番、${opt}。`;
-      });
-
-      speakText(speech, () => {
+      narrateExamQuestion(q, () => {
         if (!isExamAutoPlay.value) return;
 
-        // 2. シンキングタイム（2.5秒）
+        // 次の問題へ遷移
         examAutoTimer = setTimeout(() => {
           if (!isExamAutoPlay.value) return;
 
-          // 画面上の回答を正解選択肢にセットして視覚的に反映
-          examUserAnswers.value[currentExamIndex.value] = q.correctIndex;
+          if (currentExamIndex.value < examQuestions.value.length - 1) {
+            nextExamQuestion();
+            playExamAutoCycle();
+          } else {
+            // テスト全問終了
+            isExamAutoPlay.value = false;
+            activeSpeechCardId.value = null;
+            activeSpeechPhase.value = '';
+            activeSpeechOptionIndex.value = null;
+            speakText('実戦テストの全問聞き流しが完了しました。採点結果画面へ移行します。', () => {
+              finishExam();
+            });
+          }
+        }, 1800);
+      });
+    };
 
-          // 3. 正解・解説・引っ掛け罠・現場知見の読み上げ（設問タイプに応じた正確な論理フィードバック）
-          const answerSpeech = getAnswerSpeechText(q);
-
-          speakText(answerSpeech, () => {
-            if (!isExamAutoPlay.value) return;
-
-            // 4. 少し間を置いて次の問題へ
-            examAutoTimer = setTimeout(() => {
-              if (!isExamAutoPlay.value) return;
-
-              if (currentExamIndex.value < examQuestions.value.length - 1) {
-                nextExamQuestion();
-                playExamAutoCycle();
-              } else {
-                // テスト全問終了
-                isExamAutoPlay.value = false;
-                speakText('実戦テストの全問聞き流しが完了しました。採点結果画面へ移行します。', () => {
-                  finishExam();
-                });
-              }
-            }, 1800);
-          });
-        }, 2500);
+    // 🔊 現在の実戦テスト問題を単体で読み上げる（ハイライト追従連動）
+    const speakCurrentExamQuestion = () => {
+      const q = currentExamQuestion.value;
+      if (!q || !q.question) return;
+      if (isSpeaking.value && activeSpeechCardId.value === q.id && !isExamAutoPlay.value) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      playChimeAndUnlock();
+      narrateExamQuestion(q, () => {
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
       });
     };
 
@@ -1868,12 +2075,16 @@ createApp({
       const list = filteredExamReviewList.value;
       if (!isExamReviewAutoPlay.value || list.length === 0 || currentExamReviewSpeechIndex.value >= list.length) {
         isExamReviewAutoPlay.value = false;
+        activeSpeechCardId.value = null;
         speakText('復習対象の問題の聞き流しがすべて完了しました。大変お疲れ様でした。');
         return;
       }
 
       const item = list[currentExamReviewSpeechIndex.value];
       const q = item.q;
+      activeSpeechCardId.value = q.id;
+      scrollToSpeechTarget(`exam-review-item-${q.id}`, 'center');
+
       const num = currentExamReviewSpeechIndex.value + 1;
       const cat = q.chapterName || q.category || '施工';
       const statusText = item.isCorrect ? '正解した問題です。' : '見直しが必要な問題です。あなたの回答は誤りでした。';
@@ -1890,6 +2101,7 @@ createApp({
             playExamReviewAutoCycle();
           } else {
             isExamReviewAutoPlay.value = false;
+            activeSpeechCardId.value = null;
             speakText('復習対象の問題の聞き流しがすべて完了しました。');
           }
         }, 1600);
@@ -2052,14 +2264,15 @@ createApp({
       }
     };
 
-    const playQuizAutoCycle = () => {
-      if (!isQuizAutoPlay.value || activeQuizQuestions.value.length === 0) {
-        isQuizAutoPlay.value = false;
+    // 🎙️ 工種別ドリル1問の同期ステップ読み上げ（問題 → 各肢 → シンキング → 正解 → 解説 → 罠 → 現場知見）
+    const narrateQuizQuestion = (q, onEnd) => {
+      if (!q || !q.question) {
+        if (onEnd) onEnd();
         return;
       }
-
-      const q = currentQuestion.value;
-      if (!q || !q.question) return;
+      activeSpeechCardId.value = q.id;
+      activeSpeechOptionIndex.value = null;
+      scrollToSpeechTarget('quiz-card', 'center');
 
       const qNum = currentQuizIndex.value + 1;
       const cat = q.chapterName || q.category || '';
@@ -2069,42 +2282,136 @@ createApp({
       clearInterval(quizTimerInterval);
       isTimerRunning.value = false;
 
-      // 1. 問題文と選択肢の読み上げ
-      let speech = `ドリル第${qNum}問。${cat}。問題。${q.question}。`;
-      opts.forEach((opt, i) => {
-        speech += `選択肢${i + 1}番、${opt}。`;
-      });
+      // Step 1: 問題文の読み上げ & ハイライト追従
+      activeSpeechPhase.value = 'question';
+      scrollToSpeechTarget('quiz-q-box', 'nearest');
+      const qSpeech = `ドリル第${qNum}問。${cat}。問題。${q.question}。`;
 
-      speakText(speech, () => {
+      speakText(qSpeech, () => {
+        if (activeSpeechCardId.value !== q.id) return;
+
+        // Step 2: 選択肢を1肢ずつ順番に読み上げ ＆ 各肢をハイライト追従
+        const narrateOpts = (idx) => {
+          if (activeSpeechCardId.value !== q.id) return;
+          if (idx >= opts.length) {
+            activeSpeechOptionIndex.value = null;
+            proceedToAnswer();
+            return;
+          }
+          activeSpeechPhase.value = 'option';
+          activeSpeechOptionIndex.value = idx;
+          scrollToSpeechTarget(`quiz-opt-${idx}`, 'nearest');
+          const optSpeech = `選択肢${idx + 1}番、${opts[idx]}。`;
+          speakText(optSpeech, () => {
+            narrateOpts(idx + 1);
+          });
+        };
+
+        const proceedToAnswer = () => {
+          if (activeSpeechCardId.value !== q.id) return;
+          // Step 3: シンキングタイム (2.0秒)
+          activeSpeechPhase.value = 'thinking';
+          quizAutoTimer = setTimeout(() => {
+            if (activeSpeechCardId.value !== q.id) return;
+
+            // 画面上も回答状態にして正解を表示
+            handleSelectOption(q.correctIndex);
+
+            // Step 4: 正解発表 & 正解肢ハイライト追従
+            activeSpeechPhase.value = 'answer';
+            activeSpeechOptionIndex.value = q.correctIndex;
+            scrollToSpeechTarget(`quiz-opt-${q.correctIndex}`, 'nearest');
+
+            const answerSpeech = getAnswerSpeechText(q);
+
+            speakText(answerSpeech, () => {
+              if (activeSpeechCardId.value !== q.id) return;
+              activeSpeechOptionIndex.value = null;
+
+              // Step 5: 解説の読み上げ & ハイライト追従
+              activeSpeechPhase.value = 'explanation';
+              scrollToSpeechTarget('quiz-exp-card', 'nearest');
+              const expSpeech = q.explanation ? `解説。${q.explanation}。` : '';
+
+              speakText(expSpeech, () => {
+                if (activeSpeechCardId.value !== q.id) return;
+
+                // Step 6: 引っ掛け罠
+                activeSpeechPhase.value = 'trap';
+                scrollToSpeechTarget('quiz-trap-card', 'nearest');
+                const trapSpeech = q.trapNote ? `引っ掛け罠。${q.trapNote}。` : '';
+
+                speakText(trapSpeech, () => {
+                  if (activeSpeechCardId.value !== q.id) return;
+
+                  // Step 7: 現場知見
+                  activeSpeechPhase.value = 'field';
+                  scrollToSpeechTarget('quiz-field-card', 'nearest');
+                  const fieldSpeech = q.fieldReality ? `現場知見。${q.fieldReality}。` : '';
+
+                  speakText(fieldSpeech, () => {
+                    if (activeSpeechCardId.value === q.id) {
+                      activeSpeechPhase.value = '';
+                      activeSpeechOptionIndex.value = null;
+                    }
+                    if (onEnd) onEnd();
+                  });
+                });
+              });
+            });
+          }, 2000);
+        };
+
+        narrateOpts(0);
+      });
+    };
+
+    const playQuizAutoCycle = () => {
+      if (!isQuizAutoPlay.value || activeQuizQuestions.value.length === 0) {
+        isQuizAutoPlay.value = false;
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
+        return;
+      }
+
+      const q = currentQuestion.value;
+      if (!q || !q.question) return;
+
+      narrateQuizQuestion(q, () => {
         if (!isQuizAutoPlay.value) return;
 
-        // 2. シンキングタイム（2.2秒）
         quizAutoTimer = setTimeout(() => {
           if (!isQuizAutoPlay.value) return;
 
-          // 画面上も回答状態にして正解を表示
-          handleSelectOption(q.correctIndex);
+          if (currentQuizIndex.value < activeQuizQuestions.value.length - 1) {
+            nextQuestion();
+            playQuizAutoCycle();
+          } else {
+            isQuizAutoPlay.value = false;
+            activeSpeechCardId.value = null;
+            activeSpeechPhase.value = '';
+            activeSpeechOptionIndex.value = null;
+            speakText('選択した工種ドリルの聞き流しがすべて終了しました。大変お疲れ様でした。');
+          }
+        }, 1800);
+      });
+    };
 
-          // 3. 正解と解説・罠・現場知見の読み上げ（設問タイプに応じた正確な論理フィードバック）
-          const answerSpeech = getAnswerSpeechText(q);
-
-          speakText(answerSpeech, () => {
-            if (!isQuizAutoPlay.value) return;
-
-            // 4. 少し間を置いて次の問題へ
-            quizAutoTimer = setTimeout(() => {
-              if (!isQuizAutoPlay.value) return;
-
-              if (currentQuizIndex.value < activeQuizQuestions.value.length - 1) {
-                nextQuestion();
-                playQuizAutoCycle();
-              } else {
-                isQuizAutoPlay.value = false;
-                speakText('選択した工種ドリルの聞き流しがすべて終了しました。大変お疲れ様でした。');
-              }
-            }, 1800);
-          });
-        }, 2200);
+    // 🔊 現在のドリル問題を単体で読み上げる（ハイライト追従連動）
+    const speakCurrentQuizQuestion = () => {
+      const q = currentQuestion.value;
+      if (!q || !q.question) return;
+      if (isSpeaking.value && activeSpeechCardId.value === q.id && !isQuizAutoPlay.value) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      playChimeAndUnlock();
+      narrateQuizQuestion(q, () => {
+        activeSpeechCardId.value = null;
+        activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
       });
     };
 
@@ -2166,37 +2473,54 @@ createApp({
       }
     };
 
-    // 🎙️ チートシート1問の同期ステップ読み上げ（問題 → 4肢 → 不適当な正解肢 → 解説 → 罠 → 現場知見）
+    // 🎙️ チートシート1問の同期ステップ読み上げ（問題 → 各肢 → 正解肢 → 解説 → 罠 → 現場知見 & ハイライト追従）
     const narrateCheatQuestion = (q, onEnd) => {
       if (!q) {
         if (onEnd) onEnd();
         return;
       }
       activeSpeechCardId.value = q.id;
+      activeSpeechOptionIndex.value = null;
+      scrollToSpeechTarget(`cheat-card-${q.id}`, 'center');
+
       const num = (filteredCheatSheetQuestions.value.findIndex(item => item.id === q.id) + 1) || (currentCheatSpeechIndex.value + 1) || 1;
       const cat = q.chapterName || q.category || '施工';
       const opts = q.options || [];
       const correctOptText = (opts && opts[q.correctIndex]) ? opts[q.correctIndex] : '';
 
-      // Step 1: 問題文の読み上げ
+      // Step 1: 問題文の読み上げ & ハイライト追従
       activeSpeechPhase.value = 'question';
+      scrollToSpeechTarget(`cheat-q-${q.id}`, 'nearest');
       const qSpeech = `第${num}問。${cat}。問題。${q.question}。`;
 
       speakText(qSpeech, () => {
         if (activeSpeechCardId.value !== q.id) return;
 
-        // Step 2: 4つの選択肢の提示
-        activeSpeechPhase.value = 'options';
-        let optSpeech = '選択肢です。';
-        opts.forEach((opt, idx) => {
-          optSpeech += `${idx + 1}番、${opt}。`;
-        });
-
-        speakText(optSpeech, () => {
+        // Step 2: 選択肢を1肢ずつ順番に読み上げ ＆ 各肢をハイライト追従
+        const narrateOpts = (idx) => {
           if (activeSpeechCardId.value !== q.id) return;
+          if (idx >= opts.length) {
+            activeSpeechOptionIndex.value = null;
+            proceedToAnswer();
+            return;
+          }
+          activeSpeechPhase.value = 'option';
+          activeSpeechOptionIndex.value = idx;
+          scrollToSpeechTarget(`cheat-opt-${q.id}-${idx}`, 'nearest');
+          const prefix = idx === 0 ? '選択肢です。' : '';
+          const optSpeech = `${prefix}肢${idx + 1}番、${opts[idx]}。`;
+          speakText(optSpeech, () => {
+            narrateOpts(idx + 1);
+          });
+        };
 
-          // Step 3: 設問タイプに応じた正解肢の指摘
+        const proceedToAnswer = () => {
+          if (activeSpeechCardId.value !== q.id) return;
+          // Step 3: 設問タイプに応じた正解肢の指摘 & 正解肢ハイライト追従
           activeSpeechPhase.value = 'answer';
+          activeSpeechOptionIndex.value = q.correctIndex;
+          scrollToSpeechTarget(`cheat-opt-${q.id}-${q.correctIndex}`, 'nearest');
+
           const qType = getQuestionType(q);
           let ansSpeech = '';
           if (qType === 'futekitou') {
@@ -2209,9 +2533,11 @@ createApp({
 
           speakText(ansSpeech, () => {
             if (activeSpeechCardId.value !== q.id) return;
+            activeSpeechOptionIndex.value = null;
 
-            // Step 4: 理由と根拠の解説
+            // Step 4: 理由と根拠の解説 & ハイライト追従
             activeSpeechPhase.value = 'explanation';
+            scrollToSpeechTarget(`cheat-exp-${q.id}`, 'nearest');
             const expLabel = qType === 'futekitou' 
               ? '不適当である理由の解説。' 
               : qType === 'hanyou_nai' 
@@ -2222,31 +2548,36 @@ createApp({
             speakText(expSpeech, () => {
               if (activeSpeechCardId.value !== q.id) return;
 
-              // Step 5: 出題者の引っ掛け罠
+              // Step 5: 出題者の引っ掛け罠 & ハイライト追従
               activeSpeechPhase.value = 'trap';
+              scrollToSpeechTarget(`cheat-trap-${q.id}`, 'nearest');
               const trapSpeech = q.trapNote ? `出題者の引っ掛け罠。${q.trapNote}。` : '';
 
               speakText(trapSpeech, () => {
                 if (activeSpeechCardId.value !== q.id) return;
 
-                // Step 6: 現場工事長の知見
+                // Step 6: 現場工事長の知見 & ハイライト追従
                 activeSpeechPhase.value = 'field';
+                scrollToSpeechTarget(`cheat-field-${q.id}`, 'nearest');
                 const fieldSpeech = q.fieldReality ? `現場工事長の知見。${q.fieldReality}。` : '';
 
                 speakText(fieldSpeech, () => {
                   if (activeSpeechCardId.value === q.id) {
                     activeSpeechPhase.value = '';
+                    activeSpeechOptionIndex.value = null;
                   }
                   if (onEnd) onEnd();
                 });
               });
             });
           });
-        });
+        };
+
+        narrateOpts(0);
       });
     };
 
-    // 🔊 チートシート個別項目の音声解説読み上げ
+    // 🔊 チートシート個別項目の音声解説読み上げ（ハイライト追従連動）
     const speakCheatItem = (q) => {
       if (!q) return;
       if (isSpeaking.value && activeSpeechCardId.value === q.id) {
@@ -2255,10 +2586,11 @@ createApp({
       }
       stopSpeech();
       playChimeAndUnlock();
-      showSpeechToast('🔊 問題・選択肢・罠知見をリアルタイム同期読み上げ中...', 'info', 3000);
+      showSpeechToast('🔊 問題・選択肢・罠知見をハイライト追従で読み上げ中...', 'info', 3000);
       narrateCheatQuestion(q, () => {
         activeSpeechCardId.value = null;
         activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
       });
     };
 
@@ -2268,6 +2600,7 @@ createApp({
         isCheatAutoPlay.value = false;
         activeSpeechCardId.value = null;
         activeSpeechPhase.value = '';
+        activeSpeechOptionIndex.value = null;
         speakText('チートシートの全項目聞き流しが完了しました。大変お疲れ様でした。');
         return;
       }
@@ -2291,6 +2624,7 @@ createApp({
             isCheatAutoPlay.value = false;
             activeSpeechCardId.value = null;
             activeSpeechPhase.value = '';
+            activeSpeechOptionIndex.value = null;
             speakText('チートシートの全項目聞き流しが完了しました。');
           }
         }, 1500);
@@ -2534,10 +2868,13 @@ createApp({
       speechToastType,
       activeSpeechCardId,
       activeSpeechPhase,
+      activeSpeechOptionIndex,
       playChimeAndUnlock,
       speakCurrentWord,
       speakItem,
       speakCheatItem,
+      speakCurrentExamQuestion,
+      speakCurrentQuizQuestion,
       toggleAutoPlay,
       toggleReviewAutoPlay,
       toggleExamAutoPlay,

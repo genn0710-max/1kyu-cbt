@@ -368,18 +368,40 @@
         <div v-else-if="isExamStarted && !isExamFinished" class="flex-1 flex flex-col md:flex-row gap-5">
           
           <!-- メイン問題画面 -->
-          <div class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative">
+          <div id="exam-card" class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative">
             
             <!-- 上部バー -->
-            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-              <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800 flex-wrap gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs font-bold text-amber-400">第 {{ currentExamIndex + 1 }} 問</span>
                 <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{{ currentExamQuestion.chapterName || currentExamQuestion.category }}</span>
                 <span class="text-xs text-slate-500 font-mono">({{ currentExamIndex + 1 }}/{{ examQuestions.length }})</span>
                 <span v-if="selectedExamMode === 'intensive20'" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded font-semibold">濃縮解説モード</span>
+                <!-- 音声再生中フェーズバッジ -->
+                <span v-if="activeSpeechCardId === currentExamQuestion.id && isSpeaking" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
+                  <span>🔊</span>
+                  <span v-if="activeSpeechPhase === 'question'">問題文を再生中</span>
+                  <span v-else-if="activeSpeechPhase === 'option'">選択肢{{ (activeSpeechOptionIndex !== null ? activeSpeechOptionIndex + 1 : '') }}を提示中</span>
+                  <span v-else-if="activeSpeechPhase === 'thinking'">🤔 シンキングタイム</span>
+                  <span v-else-if="activeSpeechPhase === 'answer'">正解肢を提示中</span>
+                  <span v-else-if="activeSpeechPhase === 'explanation'">解説を再生中</span>
+                  <span v-else-if="activeSpeechPhase === 'trap'">引っ掛け罠を解説中</span>
+                  <span v-else-if="activeSpeechPhase === 'field'">現場知見を解説中</span>
+                  <span v-else>音声再生中</span>
+                </span>
               </div>
 
               <div class="flex items-center gap-2 flex-wrap justify-end">
+                <!-- 🔊 単問読み上げボタン -->
+                <button 
+                  v-if="isSpeechSupported"
+                  @click="speakCurrentExamQuestion"
+                  class="px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all cursor-pointer font-bold shadow-sm"
+                  :class="activeSpeechCardId === currentExamQuestion.id && isSpeaking && !isExamAutoPlay ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-slate-950 hover:bg-slate-800 text-sky-300 border-slate-700'"
+                  :title="activeSpeechCardId === currentExamQuestion.id && isSpeaking && !isExamAutoPlay ? '音声を停止します' : 'この問題・4肢・正解をハイライト追従で読み上げます'">
+                  <span>{{ activeSpeechCardId === currentExamQuestion.id && isSpeaking && !isExamAutoPlay ? '⏹ 停止' : '🔊 聴く' }}</span>
+                </button>
+
                 <!-- 🎧 実戦テスト聞き流し耳学ボタン -->
                 <button 
                   v-if="isSpeechSupported"
@@ -406,9 +428,9 @@
               </div>
             </div>
 
-            <!-- 問題文 -->
-            <!-- 問題文 ＆ 設問タイプ明示バッジ -->
-            <div class="mb-5 flex-1">
+            <!-- 問題文 ＆ 設問タイプ明示バッジ（ハイライト追従） -->
+            <div id="exam-q-box" class="mb-5 flex-1 p-3 rounded-xl transition-all border"
+                 :class="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/60 shadow-lg' : 'border-transparent'">
               <div class="mb-2 flex items-center gap-2">
                 <span v-if="getQuestionType(currentExamQuestion) === 'futekitou'" 
                       class="bg-rose-950/80 text-rose-300 border border-rose-700/80 text-[11px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
@@ -428,15 +450,20 @@
               </h2>
             </div>
 
-            <!-- 選択肢 1〜4 -->
+            <!-- 選択肢 1〜4（ハイライト追従） -->
             <div class="space-y-3 mb-5">
               <button 
                 v-for="(option, idx) in currentExamQuestion.options" 
                 :key="idx"
+                :id="'exam-opt-' + idx"
                 @click="selectExamAnswer(idx)"
                 :disabled="selectedExamMode === 'intensive20' && examUserAnswers[currentExamIndex] !== null"
                 class="w-full text-left p-3.5 rounded-xl border text-sm transition-all flex items-start gap-3"
-                :class="getExamOptionClass(idx)">
+                :class="[
+                  getExamOptionClass(idx),
+                  activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === idx ? 'ring-2 ring-indigo-400 border-indigo-400 bg-indigo-950/80 text-white shadow-lg scale-[1.01]' : '',
+                  activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'answer' && idx === currentExamQuestion.correctIndex ? 'ring-2 ring-rose-500 border-rose-500 bg-rose-950/70 text-rose-100 shadow-xl scale-[1.01]' : ''
+                ]">
                 <div class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 border"
                      :class="getExamBadgeClass(idx)">
                   {{ idx + 1 }}
@@ -455,21 +482,24 @@
               </button>
             </div>
 
-            <!-- 🧠 濃縮20分版用: 即時解説＆引っ掛けカード＆現場知見 -->
+            <!-- 🧠 濃縮20分版用: 即時解説＆引っ掛けカード＆現場知見（ハイライト追従） -->
             <div v-if="selectedExamMode === 'intensive20' && examUserAnswers[currentExamIndex] !== null" 
                  class="space-y-3 pt-3 border-t border-slate-800 mb-4 animate-fade-in">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="bg-slate-950 border border-emerald-600/40 rounded-xl p-3 text-xs">
+                <div id="exam-exp-card" class="bg-slate-950 border rounded-xl p-3 text-xs transition-all"
+                     :class="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'explanation' ? 'border-emerald-400 ring-2 ring-emerald-400/70 bg-emerald-950/80 shadow-lg text-white' : 'border-emerald-600/40'">
                   <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">
                     {{ getQuestionType(currentExamQuestion) === 'futekitou' ? '🟢 なぜ不適当なのか・正解の論理' : getQuestionType(currentExamQuestion) === 'hanyou_nai' ? '🟢 なぜ該当しないのか・正解の論理' : '🟢 なぜ適当なのか・他肢の不適当理由' }}
                   </h4>
                   <p class="text-slate-200 leading-relaxed whitespace-pre-wrap">{{ currentExamQuestion.explanation }}</p>
                 </div>
-                <div class="bg-slate-950 border border-amber-600/40 rounded-xl p-3 text-xs">
+                <div id="exam-trap-card" class="bg-slate-950 border rounded-xl p-3 text-xs transition-all"
+                     :class="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'trap' ? 'border-amber-400 ring-2 ring-amber-400/70 bg-amber-950/90 shadow-lg text-white' : 'border-amber-600/40'">
                   <h4 class="font-bold text-amber-400 mb-1 flex items-center gap-1">🚨 ここが引っ掛け罠！</h4>
                   <p class="text-amber-200/90 leading-relaxed whitespace-pre-wrap">{{ currentExamQuestion.trapNote }}</p>
                 </div>
-                <div class="bg-slate-950 border border-cyan-600/40 rounded-xl p-3 text-xs">
+                <div id="exam-field-card" class="bg-slate-950 border rounded-xl p-3 text-xs transition-all"
+                     :class="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'field' ? 'border-cyan-400 ring-2 ring-cyan-400/70 bg-cyan-950/90 shadow-lg text-white' : 'border-cyan-600/40'">
                   <h4 class="font-bold text-cyan-300 mb-1 flex items-center gap-1">📐 工事長の現場目線</h4>
                   <p class="text-slate-200 leading-relaxed whitespace-pre-wrap">{{ currentExamQuestion.fieldReality }}</p>
                 </div>
@@ -663,8 +693,9 @@
               <div 
                 v-for="item in filteredExamReviewList" 
                 :key="item.q.id" 
+                :id="'exam-review-item-' + item.q.id"
                 class="bg-slate-950 p-4 rounded-xl border transition-all text-xs"
-                :class="item.isCorrect ? 'border-slate-800' : 'border-rose-900/60 shadow-md shadow-rose-950/20'">
+                :class="activeSpeechCardId === item.q.id ? 'border-sky-400 ring-2 ring-sky-400/80 bg-sky-950/40 shadow-lg' : (item.isCorrect ? 'border-slate-800' : 'border-rose-900/60 shadow-md shadow-rose-950/20')">
                 
                 <!-- ヘッダー行（章名・正誤バッジ・ブックマーク） -->
                 <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
@@ -867,7 +898,7 @@
         </div>
 
         <!-- 1. フラッシュカード本体（演習中） -->
-        <div v-if="!isWordSessionFinished && activeWords.length > 0" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-2xl space-y-5 relative">
+        <div id="word-card" v-if="!isWordSessionFinished && activeWords.length > 0" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-2xl space-y-5 relative">
           
           <!-- カードヘッダー -->
           <div class="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
@@ -892,10 +923,10 @@
               <button 
                 v-if="isSpeechSupported"
                 @click="speakCurrentWord" 
-                class="text-[11px] px-2.5 py-0.5 rounded-full border transition-all flex items-center gap-1"
-                :class="isSpeaking && !isAutoPlay ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold' : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-amber-500/60'">
+                class="text-[11px] px-2.5 py-0.5 rounded-full border transition-all flex items-center gap-1 font-bold shadow-sm"
+                :class="isSpeaking && !isAutoPlay && activeSpeechCardId === currentWord.id ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-amber-500/60'">
                 <span>🔊</span>
-                <span>{{ isSpeaking && !isAutoPlay ? '停止' : '読み上げ' }}</span>
+                <span>{{ isSpeaking && !isAutoPlay && activeSpeechCardId === currentWord.id ? '停止' : '読み上げ' }}</span>
               </button>
             </div>
 
@@ -917,19 +948,24 @@
             </p>
           </div>
 
-          <!-- 問い -->
-          <div class="py-1">
-            <div class="text-[11px] font-bold text-amber-400/80 mb-1">【暗記クイズ】（第{{ currentWordIndex + 1 }}問）</div>
+          <!-- 問い（ハイライト追従） -->
+          <div id="word-q-box" class="py-1 p-2.5 rounded-xl transition-all border"
+               :class="activeSpeechCardId === currentWord.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/60 shadow-lg' : 'border-transparent'">
+            <div class="text-[11px] font-bold text-amber-400/80 mb-1 flex items-center justify-between">
+              <span>【暗記クイズ】（第{{ currentWordIndex + 1 }}問）</span>
+              <span v-if="activeSpeechCardId === currentWord.id && isSpeaking" class="text-[10px] text-sky-300 font-normal animate-pulse">🔊 読み上げ中</span>
+            </div>
             <h3 class="text-base md:text-lg font-bold text-white leading-relaxed select-text">
               {{ currentWord.question }}
             </h3>
           </div>
 
-          <!-- 選択肢（ランダム配置の即解カード） -->
+          <!-- 選択肢（ランダム配置の即解カード：ハイライト追従） -->
           <div class="space-y-2.5">
             <button
               v-for="(choice, cIdx) in currentWordChoices"
               :key="cIdx"
+              :id="'word-opt-' + cIdx"
               @click="handleSelectWord(choice)"
               :disabled="hasAnsweredWord"
               class="w-full text-left p-3.5 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between active:scale-[0.99]"
@@ -940,7 +976,9 @@
                     ? 'bg-emerald-950/90 border-emerald-500 text-emerald-100 ring-1 ring-emerald-500'
                     : selectedWordChoice === choice
                       ? 'bg-rose-950/90 border-rose-500 text-rose-100 ring-1 ring-rose-500'
-                      : 'bg-slate-950/40 border-slate-800 text-slate-600 opacity-50'
+                      : 'bg-slate-950/40 border-slate-800 text-slate-600 opacity-50',
+                activeSpeechCardId === currentWord.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === cIdx ? 'ring-2 ring-indigo-400 border-indigo-400 bg-indigo-950/80 text-white shadow-lg scale-[1.01]' : '',
+                activeSpeechCardId === currentWord.id && activeSpeechPhase === 'answer' && choice === currentWord.answer ? 'ring-2 ring-emerald-400 border-emerald-400 bg-emerald-950/90 text-white shadow-lg scale-[1.01]' : ''
               ]">
               <span>{{ choice }}</span>
               <span v-if="hasAnsweredWord && choice === currentWord.answer" class="text-emerald-400 text-xs font-black">
@@ -952,8 +990,9 @@
             </button>
           </div>
 
-          <!-- 解答後の用語解説＆詳細解説カード -->
-          <div v-if="hasAnsweredWord" class="space-y-3 pt-3 border-t border-slate-800 animate-fade-in">
+          <!-- 解答後の用語解説＆詳細解説カード（ハイライト追従） -->
+          <div id="word-glossary-box" v-if="hasAnsweredWord" class="space-y-3 pt-3 border-t border-slate-800 animate-fade-in transition-all"
+               :class="activeSpeechCardId === currentWord.id && activeSpeechPhase === 'explanation' ? 'p-2 rounded-xl ring-2 ring-emerald-400 border-emerald-400 bg-emerald-950/30' : ''">
             
             <!-- 用語解説（現場での定義・役割） -->
             <div v-if="currentWord.termGlossary" class="bg-cyan-950/30 border border-cyan-800/50 rounded-xl p-3.5 text-xs">
@@ -1121,8 +1160,9 @@
               <div 
                 v-for="(item, idx) in reviewedWordList" 
                 :key="item.word.id" 
+                :id="'word-review-item-' + item.word.id"
                 class="bg-slate-950 border rounded-xl p-4 space-y-2.5 text-xs transition-all"
-                :class="item.record.isCorrect ? 'border-slate-800' : 'border-rose-900/60 bg-rose-950/10'">
+                :class="activeSpeechCardId === item.word.id ? 'border-sky-400 ring-2 ring-sky-400/80 bg-sky-950/40 shadow-lg' : (item.record.isCorrect ? 'border-slate-800' : 'border-rose-900/60 bg-rose-950/10')">
                 
                 <div class="flex items-center justify-between flex-wrap gap-2">
                   <div class="flex items-center gap-2">
@@ -1201,7 +1241,17 @@
             </label>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- 🔊 単問読み上げボタン -->
+            <button 
+              v-if="isSpeechSupported"
+              @click="speakCurrentQuizQuestion"
+              class="px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all cursor-pointer font-bold shadow-sm"
+              :class="activeSpeechCardId === currentQuestion.id && isSpeaking && !isQuizAutoPlay ? 'bg-rose-600 text-white border-rose-400 animate-pulse' : 'bg-slate-950 hover:bg-slate-800 text-sky-300 border-slate-700'"
+              :title="activeSpeechCardId === currentQuestion.id && isSpeaking && !isQuizAutoPlay ? '音声を停止します' : 'この問題・4肢・正解をハイライト追従で読み上げます'">
+              <span>{{ activeSpeechCardId === currentQuestion.id && isSpeaking && !isQuizAutoPlay ? '⏹ 停止' : '🔊 聴く' }}</span>
+            </button>
+
             <!-- 🎧 工種別ドリル聞き流しボタン -->
             <button 
               v-if="isSpeechSupported"
@@ -1215,7 +1265,7 @@
           </div>
         </div>
 
-        <div v-if="activeQuizQuestions.length > 0" class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl relative overflow-hidden">
+        <div id="quiz-card" v-if="activeQuizQuestions.length > 0" class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl relative overflow-hidden">
           
           <div class="absolute top-0 left-0 right-0 h-2 bg-slate-950">
             <div 
@@ -1224,10 +1274,22 @@
               :style="{ width: (timerRemaining / 40 * 100) + '%' }"></div>
           </div>
 
-          <div class="flex items-center justify-between mt-2 mb-4">
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between mt-2 mb-4 flex-wrap gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="bg-slate-800 text-sky-400 text-xs px-2.5 py-0.5 rounded-full font-medium">{{ currentQuestion.chapterName || currentQuestion.category }}</span>
               <span v-if="currentQuestion.difficulty" class="bg-amber-950/80 text-amber-300 border border-amber-700/50 text-[11px] px-2 py-0.5 rounded-md">{{ currentQuestion.difficulty }}</span>
+              <!-- 音声再生中フェーズバッジ -->
+              <span v-if="activeSpeechCardId === currentQuestion.id && isSpeaking" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
+                <span>🔊</span>
+                <span v-if="activeSpeechPhase === 'question'">問題文を再生中</span>
+                <span v-else-if="activeSpeechPhase === 'option'">選択肢{{ (activeSpeechOptionIndex !== null ? activeSpeechOptionIndex + 1 : '') }}を提示中</span>
+                <span v-else-if="activeSpeechPhase === 'thinking'">🤔 シンキングタイム</span>
+                <span v-else-if="activeSpeechPhase === 'answer'">正解肢を提示中</span>
+                <span v-else-if="activeSpeechPhase === 'explanation'">解説を再生中</span>
+                <span v-else-if="activeSpeechPhase === 'trap'">引っ掛け罠を解説中</span>
+                <span v-else-if="activeSpeechPhase === 'field'">現場知見を解説中</span>
+                <span v-else>音声再生中</span>
+              </span>
             </div>
             
             <div class="flex items-center gap-2">
@@ -1246,8 +1308,9 @@
             </div>
           </div>
 
-          <div class="mb-5">
-            <!-- 設問タイプ（不適当 / 適当 / 該当しない）明示バッジ -->
+          <!-- 問題文 ＆ 設問タイプ明示バッジ（ハイライト追従） -->
+          <div id="quiz-q-box" class="mb-5 p-3 rounded-xl transition-all border"
+               :class="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/60 shadow-lg' : 'border-transparent'">
             <div class="mb-2 flex items-center gap-2">
               <span v-if="getQuestionType(currentQuestion) === 'futekitou'" 
                     class="bg-rose-950/80 text-rose-300 border border-rose-700/80 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
@@ -1268,14 +1331,20 @@
             </h2>
           </div>
 
+          <!-- 選択肢 1〜4（ハイライト追従） -->
           <div class="space-y-2.5 mb-6">
             <button 
               v-for="(option, idx) in currentQuestion.options" 
               :key="idx"
+              :id="'quiz-opt-' + idx"
               @click="handleSelectOption(idx)"
               :disabled="hasAnswered"
               class="w-full text-left p-3.5 rounded-xl border text-sm transition-all flex items-start gap-3 group relative"
-              :class="getOptionStyle(idx)">
+              :class="[
+                getOptionStyle(idx),
+                activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === idx ? 'ring-2 ring-indigo-400 border-indigo-400 bg-indigo-950/80 text-white shadow-lg scale-[1.01]' : '',
+                activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'answer' && idx === currentQuestion.correctIndex ? 'ring-2 ring-rose-500 border-rose-500 bg-rose-950/70 text-rose-100 shadow-xl scale-[1.01]' : ''
+              ]">
               <div class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 border"
                    :class="getOptionBadgeStyle(idx)">
                 {{ idx + 1 }}
@@ -1326,8 +1395,10 @@
               </button>
             </div>
 
+            <!-- 解説・罠・現場目線カード（ハイライト追従） -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div class="bg-slate-950 border border-emerald-600/50 rounded-xl p-4 shadow-sm">
+              <div id="quiz-exp-card" class="bg-slate-950 border rounded-xl p-4 shadow-sm transition-all"
+                   :class="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'explanation' ? 'border-emerald-400 ring-2 ring-emerald-400/70 bg-emerald-950/80 shadow-lg text-white' : 'border-emerald-600/50'">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                   <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">
@@ -1339,7 +1410,8 @@
                 </p>
               </div>
 
-              <div class="bg-slate-950 border border-amber-500/50 rounded-xl p-4 shadow-sm bg-gradient-to-br from-slate-950 via-slate-950 to-amber-950/20">
+              <div id="quiz-trap-card" class="bg-slate-950 border rounded-xl p-4 shadow-sm transition-all"
+                   :class="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'trap' ? 'border-amber-400 ring-2 ring-amber-400/70 bg-amber-950/90 shadow-lg text-white' : 'border-amber-500/50 bg-gradient-to-br from-slate-950 via-slate-950 to-amber-950/20'">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="w-2 h-2 rounded-full bg-amber-400"></span>
                   <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
@@ -1351,7 +1423,8 @@
                 </div>
               </div>
 
-              <div class="bg-slate-950 border border-cyan-500/50 rounded-xl p-4 shadow-sm">
+              <div id="quiz-field-card" class="bg-slate-950 border rounded-xl p-4 shadow-sm transition-all"
+                   :class="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'field' ? 'border-cyan-400 ring-2 ring-cyan-400/70 bg-cyan-950/90 shadow-lg text-white' : 'border-cyan-500/50'">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                   <h3 class="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1">
@@ -1437,6 +1510,7 @@
           <div 
             v-for="q in paginatedCheatQuestions" 
             :key="q.id"
+            :id="'cheat-card-' + q.id"
             class="bg-slate-900 border rounded-xl p-4 transition-all flex flex-col justify-between space-y-3 shadow relative"
             :class="isCheatAutoPlay && filteredCheatSheetQuestions[currentCheatSpeechIndex]?.id === q.id ? 'border-amber-400 ring-2 ring-amber-400/50 bg-amber-950/20' : 'border-slate-800 hover:border-amber-500/50'">
             
@@ -1452,6 +1526,7 @@
                   <span v-if="activeSpeechCardId === q.id" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
                     <span>🔊</span>
                     <span v-if="activeSpeechPhase === 'question'">問題文を再生中</span>
+                    <span v-else-if="activeSpeechPhase === 'option'">選択肢{{ (activeSpeechOptionIndex !== null ? activeSpeechOptionIndex + 1 : '') }}を提示中</span>
                     <span v-else-if="activeSpeechPhase === 'options'">選択肢を提示中</span>
                     <span v-else-if="activeSpeechPhase === 'answer'">正解肢を指摘中</span>
                     <span v-else-if="activeSpeechPhase === 'explanation'">解説を再生中</span>
@@ -1471,10 +1546,11 @@
                 </button>
               </div>
               
-              <!-- 1. 問題文（読み上げ連動ハイライト） -->
+              <!-- 1. 問題文（読み上げ連動ハイライト追従） -->
               <div 
+                :id="'cheat-q-' + q.id"
                 class="rounded-xl p-2.5 mb-2.5 transition-all border"
-                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/50' : 'bg-slate-950/60 border-slate-800/80'">
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'question' ? 'bg-sky-950/60 border-sky-400 ring-2 ring-sky-400/50 shadow-md' : 'bg-slate-950/60 border-slate-800/80'">
                 <div class="text-[10px] font-bold text-sky-400 mb-0.5 flex items-center gap-1">
                   <span>📌</span> 問題
                 </div>
@@ -1483,11 +1559,12 @@
                 </h4>
               </div>
 
-              <!-- 2. 選択肢 4肢リスト（可視化＆読み上げ連動） -->
+              <!-- 2. 選択肢 4肢リスト（可視化＆読み上げ連動ハイライト追従） -->
               <div 
                 v-if="q.options && q.options.length > 0" 
+                :id="'cheat-opts-' + q.id"
                 class="rounded-xl p-2.5 mb-2.5 border space-y-1.5 transition-all"
-                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'options' ? 'bg-indigo-950/30 border-indigo-400/80 ring-2 ring-indigo-400/40' : 'bg-slate-950/40 border-slate-800/60'">
+                :class="activeSpeechCardId === q.id && (activeSpeechPhase === 'options' || activeSpeechPhase === 'option') ? 'bg-indigo-950/30 border-indigo-400/80 ring-2 ring-indigo-400/40' : 'bg-slate-950/40 border-slate-800/60'">
                 <div class="text-[10px] font-bold text-slate-400 flex items-center justify-between mb-1">
                   <span class="flex items-center gap-1"><span>🔢</span> 4つの選択肢</span>
                   <span class="text-[10px] text-slate-500">
@@ -1497,16 +1574,18 @@
                 <div 
                   v-for="(opt, oIdx) in q.options" 
                   :key="oIdx"
+                  :id="'cheat-opt-' + q.id + '-' + oIdx"
                   class="rounded-lg p-2 text-xs transition-all border"
                   :class="{
+                    'bg-indigo-950/80 border-indigo-400 text-white ring-2 ring-indigo-400/80 shadow-md scale-[1.01]': (activeSpeechCardId === q.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === oIdx),
                     'bg-rose-950/40 border-rose-600/70 text-rose-200 ring-2 ring-rose-500/50 shadow-md': (activeSpeechCardId === q.id && activeSpeechPhase === 'answer' && oIdx === q.correctIndex),
-                    'bg-rose-950/20 border-rose-800/50 text-rose-300 font-medium': (oIdx === q.correctIndex && !(activeSpeechCardId === q.id && activeSpeechPhase === 'answer')),
-                    'bg-slate-900/60 border-slate-800 text-slate-400': oIdx !== q.correctIndex
+                    'bg-rose-950/20 border-rose-800/50 text-rose-300 font-medium': (oIdx === q.correctIndex && !(activeSpeechCardId === q.id && (activeSpeechPhase === 'answer' || (activeSpeechPhase === 'option' && activeSpeechOptionIndex === oIdx)))),
+                    'bg-slate-900/60 border-slate-800 text-slate-400': oIdx !== q.correctIndex && !(activeSpeechCardId === q.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === oIdx)
                   }">
                   <div class="flex items-start gap-1.5">
                     <span 
                       class="px-1.5 py-0.2 rounded text-[10px] font-mono shrink-0 font-bold"
-                      :class="oIdx === q.correctIndex ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400'">
+                      :class="oIdx === q.correctIndex ? 'bg-rose-600 text-white' : (activeSpeechCardId === q.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === oIdx ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400')">
                       肢{{ oIdx + 1 }}
                     </span>
                     <span class="flex-1 leading-relaxed">{{ opt }}</span>
@@ -1521,10 +1600,11 @@
                 </div>
               </div>
 
-              <!-- 3. なぜ不適当なのか・適当なのか（正解の論理） -->
+              <!-- 3. なぜ不適当なのか・適当なのか（正解の論理：ハイライト追従） -->
               <div 
+                :id="'cheat-exp-' + q.id"
                 class="rounded-xl p-2.5 mb-2 transition-all border text-xs leading-relaxed"
-                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'explanation' ? 'bg-emerald-950/60 border-emerald-400 ring-2 ring-emerald-400/50 text-emerald-100' : 'bg-slate-950/60 border-slate-800 text-slate-300'">
+                :class="activeSpeechCardId === q.id && activeSpeechPhase === 'explanation' ? 'bg-emerald-950/60 border-emerald-400 ring-2 ring-emerald-400/50 text-emerald-100 shadow-md' : 'bg-slate-950/60 border-slate-800 text-slate-300'">
                 <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1 text-[11px]">
                   <span>💡</span> {{ getQuestionType(q) === 'futekitou' ? 'なぜ不適当なのか・正解の論理:' : getQuestionType(q) === 'hanyou_nai' ? 'なぜ該当しないのか・正解の論理:' : 'なぜ適当なのか・他肢の不適当理由:' }}
                 </div>
@@ -1533,8 +1613,9 @@
                 </div>
               </div>
 
-              <!-- 4. 🚨 罠・引っ掛け要点（読み上げ連動ハイライト） -->
+              <!-- 4. 🚨 罠・引っ掛け要点（読み上げ連動ハイライト追従） -->
               <div 
+                :id="'cheat-trap-' + q.id"
                 class="rounded-xl p-3 text-xs leading-relaxed whitespace-pre-wrap select-text mb-2 transition-all border"
                 :class="activeSpeechCardId === q.id && activeSpeechPhase === 'trap' ? 'bg-amber-950/80 border-amber-400 ring-2 ring-amber-400/60 text-amber-100 shadow-md' : 'bg-amber-950/20 border-amber-600/30 text-amber-200'">
                 <div class="font-bold text-amber-400 mb-1 flex items-center gap-1 text-[11px]">
@@ -1543,8 +1624,9 @@
                 {{ q.trapNote }}
               </div>
 
-              <!-- 5. 📐 現場工事長の知見（読み上げ連動ハイライト） -->
+              <!-- 5. 📐 現場工事長の知見（読み上げ連動ハイライト追従） -->
               <div 
+                :id="'cheat-field-' + q.id"
                 class="rounded-xl p-2.5 text-xs leading-relaxed transition-all border"
                 :class="activeSpeechCardId === q.id && activeSpeechPhase === 'field' ? 'bg-cyan-950/80 border-cyan-400 ring-2 ring-cyan-400/60 text-cyan-100 shadow-md' : 'bg-slate-950 border-cyan-800/30 text-slate-300'">
                 <div class="font-bold text-cyan-300 mb-0.5 flex items-center gap-1 text-[11px]">
@@ -1840,7 +1922,7 @@
 
   </div>
 
-  <script src="app.js?v=3.2.3"></script>
+  <script src="app.js?v=3.2.4"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -1855,7 +1937,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.2.3')
+        navigator.serviceWorker.register('./sw.js?v=3.2.4')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック
