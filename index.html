@@ -87,7 +87,7 @@
         <h2 class="text-xl font-bold text-white mb-1">関係者・限定試用版認証</h2>
         <div class="flex items-center justify-center gap-2 mb-4">
           <span class="text-xs text-amber-400 font-medium">1級建築施工管理技士補 600問実戦CBT</span>
-          <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-2.5 py-0.5 rounded-full font-bold font-mono">Ver.3.2.2</span>
+          <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-2.5 py-0.5 rounded-full font-bold font-mono">{{ appVersion }}</span>
         </div>
         
         <p class="text-xs text-slate-300 text-left mb-6 leading-relaxed bg-slate-950/70 p-3.5 rounded-xl border border-slate-800">
@@ -130,7 +130,7 @@
         </div>
 
         <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-          <span>追跡Ver: <strong class="text-emerald-400 font-mono">Ver.3.2.2</strong></span>
+          <span>追跡Ver: <strong class="text-emerald-400 font-mono">{{ appVersion }}</strong></span>
           <button type="button" @click="reloadApp" class="text-sky-400 hover:text-sky-300 underline text-[11px] flex items-center gap-1 font-medium">
             <span>🔄</span> キャッシュ消去して最新版更新
           </button>
@@ -163,7 +163,7 @@
             <!-- 累積Verバッジ -->
             <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-500/80 px-3 py-0.5 rounded-full font-bold shadow-sm font-mono flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Ver.3.2.2
+              {{ appVersion }}
             </span>
             <span class="text-xs bg-slate-800 text-amber-400 border border-slate-700 px-2.5 py-0.5 rounded-full font-mono">
               600問完全網羅
@@ -1776,7 +1776,7 @@
             :class="qrMode === 'tunnel' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'"
             class="py-1.5 rounded-lg transition-all flex flex-col items-center justify-center">
             <span>⚡ 最新即時</span>
-            <span class="text-[9px] font-mono opacity-90">Ver.3.2.2</span>
+            <span class="text-[9px] font-mono opacity-90">{{ appVersion }}</span>
           </button>
           <button 
             type="button"
@@ -1797,7 +1797,7 @@
         </div>
 
         <p class="text-[11px] text-slate-300 leading-snug">
-          <span v-if="qrMode === 'tunnel'" class="text-sky-300 font-bold">⚡ リアルタイム配信中：スキャンすると最新Ver.3.2.2が即座に起動します。</span>
+          <span v-if="qrMode === 'tunnel'" class="text-sky-300 font-bold">⚡ リアルタイム配信中：スキャンすると最新{{ appVersion }}が即座に起動します。</span>
           <span v-else-if="qrMode === 'wifi'" class="text-emerald-300 font-bold">📶 自宅Wi-Fi直結：Macと同一Wi-Fiで外部通信なしで爆速動作します。</span>
           <span v-else class="text-purple-300 font-bold">🌐 GitHub Pages公開版：※GitHubへファイルをアップロード後に反映されます。</span>
         </p>
@@ -1815,7 +1815,7 @@
           <p>🔑 <strong class="text-amber-200">合言葉（パスコード）:</strong> <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">2026</code> または <code class="bg-amber-950 px-1 py-0.5 rounded font-bold text-amber-300">cbt2026</code></p>
           <p>💡 スマホの「ホーム画面に追加」を行うと全画面の専用アプリとして動作します。</p>
           <p class="text-[10px] text-slate-400 border-t border-amber-800/30 pt-1">
-            追跡バージョン: <span class="font-mono text-amber-300 font-bold">1級建築施工管理技士補 Ver.3.2.2</span>（PC・スマホ共通）
+            追跡バージョン: <span class="font-mono text-amber-300 font-bold">1級建築施工管理技士補 {{ appVersion }}</span>（PC・スマホ共通）
           </p>
         </div>
 
@@ -1831,7 +1831,7 @@
     <footer class="mt-8 mb-4 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1 select-none">
       <div class="font-medium text-slate-300 text-sm">1級建築施工管理技士補</div>
       <div class="text-xs text-slate-400 font-mono">
-        【PC・スマホ合致 追跡バージョン】 <span class="text-emerald-400 font-bold">Ver.3.2.2</span>
+        【PC・スマホ合致 追跡バージョン】 <span class="text-emerald-400 font-bold">{{ appVersion }}</span>
       </div>
       <div class="text-[10px] text-slate-600">※600問完全網羅 / 4肢可視化同期 / Web Audio完全アンロック / 超高精度・建築発音辞書エンジン</div>
     </footer>
@@ -1840,7 +1840,7 @@
 
   </div>
 
-  <script src="app.js?v=3.2.2"></script>
+  <script src="app.js?v=3.2.3"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
