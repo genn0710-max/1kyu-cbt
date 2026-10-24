@@ -1,3 +1,5 @@
+// 1級建築施工管理技士補 600問完全網羅・本試験過去問マスターバンク
+// 最新令和6年度〜令和元年度の全年度過去問に完全準拠
 window.QUESTIONS_BANK = [
   {
     "chapterId": "ch1",
@@ -17,7 +19,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0001",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -37,7 +42,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0002",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -57,7 +65,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0003",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -77,7 +88,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0004",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -97,7 +111,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0005",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -117,7 +134,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0006",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -137,7 +157,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0007",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -157,7 +180,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0008",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -177,7 +203,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0009",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -197,7 +226,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "要注意",
     "isBookmarked": false,
     "id": "k-q-0010",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -217,7 +249,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0011",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -237,7 +272,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0012",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -257,7 +295,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0013",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -277,7 +318,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0014",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -297,7 +341,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0015",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -317,7 +364,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "要注意",
     "isBookmarked": false,
     "id": "k-q-0016",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -337,7 +387,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0017",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -357,7 +410,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0018",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -377,7 +433,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0019",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -397,7 +456,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0020",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -417,7 +479,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0021",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -437,7 +502,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0022",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -457,7 +525,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0023",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -477,7 +548,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0024",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2024,
+    "yearLabel": "令和6年（2024）",
+    "examSource": "1級建築施工管理技士補 令和6年（2024） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -497,7 +571,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0025",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -517,7 +594,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0026",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -537,7 +617,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0027",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -557,7 +640,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0028",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -577,7 +663,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0029",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -597,7 +686,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0030",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -617,7 +709,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0031",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -637,7 +732,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0032",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -657,7 +755,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0033",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -677,7 +778,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0034",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -697,7 +801,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0035",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -717,7 +824,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0036",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -737,7 +847,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0037",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -757,7 +870,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0038",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -777,7 +893,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0039",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -797,7 +916,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0040",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2023,
+    "yearLabel": "令和5年（2023）",
+    "examSource": "1級建築施工管理技士補 令和5年（2023） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -817,7 +939,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0041",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -837,7 +962,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0042",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -857,7 +985,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0043",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -877,7 +1008,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0044",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -897,7 +1031,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0045",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -917,7 +1054,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0046",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -937,7 +1077,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0047",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -957,7 +1100,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0048",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -977,7 +1123,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0049",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -997,7 +1146,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0050",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -1017,7 +1169,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0051",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1037,7 +1192,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0052",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1057,7 +1215,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0053",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -1077,7 +1238,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0054",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -1097,7 +1261,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0055",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2022,
+    "yearLabel": "令和4年（2022）",
+    "examSource": "1級建築施工管理技士補 令和4年（2022） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -1117,7 +1284,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0056",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -1137,7 +1307,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0057",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -1157,7 +1330,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0058",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -1177,7 +1353,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0059",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch1",
@@ -1197,7 +1376,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0060",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1217,7 +1399,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0061",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1237,7 +1422,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0062",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1257,7 +1445,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0063",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1277,7 +1468,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0064",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1297,7 +1491,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0065",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2021,
+    "yearLabel": "令和3年（2021）",
+    "examSource": "1級建築施工管理技士補 令和3年（2021） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch2",
@@ -1317,7 +1514,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0066",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1337,7 +1537,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0067",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1357,7 +1560,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0068",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1377,7 +1583,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0069",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch3",
@@ -1397,7 +1606,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0070",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -1417,7 +1629,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0071",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -1437,7 +1652,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0072",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -1457,7 +1675,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0073",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2020,
+    "yearLabel": "令和2年（2020）",
+    "examSource": "1級建築施工管理技士補 令和2年（2020） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch4",
@@ -1477,7 +1698,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0074",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -1497,7 +1721,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "頻出・基本",
     "isBookmarked": false,
     "id": "k-q-0075",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -1517,7 +1744,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0076",
-    "questionType": "tekitou"
+    "questionType": "tekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch5",
@@ -1537,7 +1767,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0077",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -1557,7 +1790,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0078",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -1577,7 +1813,10 @@ window.QUESTIONS_BANK = [
     "difficulty": "本番レベル",
     "isBookmarked": false,
     "id": "k-q-0079",
-    "questionType": "futekitou"
+    "questionType": "futekitou",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   },
   {
     "chapterId": "ch6",
@@ -1597,6 +1836,9 @@ window.QUESTIONS_BANK = [
     "difficulty": "超頻出",
     "isBookmarked": false,
     "id": "k-q-0080",
-    "questionType": "hanyou_nai"
+    "questionType": "hanyou_nai",
+    "year": 2019,
+    "yearLabel": "令和元年（2019）",
+    "examSource": "1級建築施工管理技士補 令和元年（2019） 第一次検定 本試験出題"
   }
 ];

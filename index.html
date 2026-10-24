@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>1級建築施工管理技士補 Ver.3.2.3</title>
+  <title>1級建築施工管理技士補 Ver.3.4.0</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,9 +13,9 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- 600問問題バンク -->
-  <script src="questions_bank.js?v=3.2.3"></script>
+  <script src="questions_bank.js?v=3.4.0"></script>
   <!-- 即解ワード暗記バンク -->
-  <script src="word_bank.js?v=3.2.3"></script>
+  <script src="word_bank.js?v=3.4.0"></script>
   <!-- モバイル & PWA (iOS / Android) メタタグ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -73,6 +73,33 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #020617; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* 🎧 聞き流し耳学・波形イコライザーアニメーション */
+    @keyframes eq-wave-1 { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+    @keyframes eq-wave-2 { 0%, 100% { height: 16px; } 50% { height: 5px; } }
+    @keyframes eq-wave-3 { 0%, 100% { height: 7px; } 50% { height: 22px; } }
+    @keyframes eq-wave-4 { 0%, 100% { height: 20px; } 50% { height: 6px; } }
+    @keyframes eq-wave-5 { 0%, 100% { height: 9px; } 50% { height: 17px; } }
+
+    .eq-bar {
+      width: 3.5px;
+      border-radius: 9999px;
+      background-color: currentColor;
+      display: inline-block;
+      transform-origin: bottom;
+      transition: height 0.15s ease;
+    }
+    .eq-bar-1 { animation: eq-wave-1 0.75s ease-in-out infinite; }
+    .eq-bar-2 { animation: eq-wave-2 0.65s ease-in-out infinite; }
+    .eq-bar-3 { animation: eq-wave-3 0.85s ease-in-out infinite; }
+    .eq-bar-4 { animation: eq-wave-4 0.6s ease-in-out infinite; }
+    .eq-bar-5 { animation: eq-wave-5 0.7s ease-in-out infinite; }
+
+    .eq-bar-paused {
+      height: 4px !important;
+      animation: none !important;
+      opacity: 0.35;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col selection:bg-sky-500 selection:text-white">
@@ -362,6 +389,51 @@
             </div>
 
           </div>
+
+          <!-- 🏛️ 年度別 過去問本試験セレクト（令和6年度〜令和元年度） -->
+          <div class="mt-8 border-t border-slate-800 pt-6">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🏛️</span>
+                <div>
+                  <h3 class="text-base md:text-lg font-bold text-white flex items-center gap-2 flex-wrap">
+                    <span>年度別 過去問本試験演習</span>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-bold">1級第一次検定 本試験準拠</span>
+                  </h3>
+                  <p class="text-xs text-slate-400">過年度の本試験（令和6年〜令和元年）を年度単位で集中特訓。実戦の出題傾向と定番パターンを完全攻略！</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div v-for="y in pastExamYears" :key="y.year"
+                   class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/60 rounded-xl p-4 flex flex-col justify-between transition-all hover:shadow-lg hover:shadow-amber-950/20 group">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-mono font-bold text-amber-400 bg-amber-950/60 border border-amber-800/80 px-2 py-0.5 rounded">
+                      🏛️ {{ y.name }}
+                    </span>
+                    <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-semibold">
+                      {{ y.badge }}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                    {{ y.desc }}
+                  </p>
+                  <div class="text-[11px] text-slate-300 flex items-center justify-between border-t border-slate-800/80 pt-2 mb-3">
+                    <span class="text-slate-400">収録問題数:</span>
+                    <strong class="text-amber-300 font-mono">{{ y.count }}問</strong>
+                  </div>
+                </div>
+                <button 
+                  @click="startPastExam(y.year)"
+                  class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold py-2 rounded-lg text-xs transition-all shadow flex items-center justify-center gap-1.5 group-hover:bg-amber-400">
+                  <span>🏛️</span>
+                  <span>{{ y.year }}年 過去問を開始</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- テスト実施中画面 -->
@@ -376,6 +448,7 @@
                 <span class="text-xs font-bold text-amber-400">第 {{ currentExamIndex + 1 }} 問</span>
                 <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded">{{ currentExamQuestion.chapterName || currentExamQuestion.category }}</span>
                 <span class="text-xs text-slate-500 font-mono">({{ currentExamIndex + 1 }}/{{ examQuestions.length }})</span>
+                <span v-if="currentExamQuestion.yearLabel" class="text-[11px] bg-amber-950/80 text-amber-300 border border-amber-700/60 px-2 py-0.5 rounded font-bold flex items-center gap-1"><span>🏛️</span><span>{{ currentExamQuestion.yearLabel }} 出題</span></span>
                 <span v-if="selectedExamMode === 'intensive20'" class="text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded font-semibold">濃縮解説モード</span>
                 <!-- 音声再生中フェーズバッジ -->
                 <span v-if="activeSpeechCardId === currentExamQuestion.id && isSpeaking" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
@@ -479,7 +552,23 @@
                     ✕ {{ getQuestionType(currentExamQuestion) === 'futekitou' ? '誤答（適当な記述）' : getQuestionType(currentExamQuestion) === 'hanyou_nai' ? '誤答（該当する項目）' : '誤答（不適当な記述）' }}
                   </span>
                 </template>
+
+                <!-- 🔊 音声読上げ中インジケーター -->
+                <span v-if="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === idx" 
+                      class="text-indigo-300 font-bold text-[11px] shrink-0 self-center flex items-center gap-1 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-500/60 animate-pulse">
+                  <span>🔊 読上げ中</span>
+                </span>
               </button>
+            </div>
+
+            <!-- 🤔 実戦テスト シンキングタイム表示バナー -->
+            <div v-if="activeSpeechCardId === currentExamQuestion.id && activeSpeechPhase === 'thinking'" 
+                 class="my-3 p-3.5 rounded-xl bg-gradient-to-r from-amber-950/80 to-slate-900 border border-amber-500/80 text-amber-200 text-xs font-bold flex items-center justify-between shadow-xl ring-2 ring-amber-500/40 animate-pulse">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">⏳</span>
+                <span>シンキングタイム中...（頭の中で正解肢を想定してください）</span>
+              </div>
+              <span class="text-[10px] bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">思考中</span>
             </div>
 
             <!-- 🧠 濃縮20分版用: 即時解説＆引っ掛けカード＆現場知見（ハイライト追従） -->
@@ -702,6 +791,9 @@
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-medium">
                       {{ item.q.chapterName || item.q.category }}
+                    </span>
+                    <span v-if="item.q.yearLabel" class="bg-amber-950/80 text-amber-300 border border-amber-700/60 px-2 py-0.5 rounded font-bold flex items-center gap-1 text-[11px]">
+                      <span>🏛️</span><span>{{ item.q.yearLabel }} 出題</span>
                     </span>
                     <span 
                       v-if="item.isCorrect" 
@@ -987,7 +1079,22 @@
               <span v-else-if="hasAnsweredWord && selectedWordChoice === choice" class="text-rose-400 text-xs font-black">
                 ✕ 不正解
               </span>
+              <!-- 🔊 音声読上げ中インジケーター -->
+              <span v-if="activeSpeechCardId === currentWord.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === cIdx" 
+                    class="text-indigo-300 font-bold text-[11px] shrink-0 self-center flex items-center gap-1 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-500/60 animate-pulse">
+                <span>🔊 読上げ中</span>
+              </span>
             </button>
+          </div>
+
+          <!-- 🤔 即解ワード シンキングタイム表示バナー -->
+          <div v-if="activeSpeechCardId === currentWord.id && activeSpeechPhase === 'thinking'" 
+               class="my-3 p-3.5 rounded-xl bg-gradient-to-r from-amber-950/80 to-slate-900 border border-amber-500/80 text-amber-200 text-xs font-bold flex items-center justify-between shadow-xl ring-2 ring-amber-500/40 animate-pulse">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">⏳</span>
+              <span>シンキングタイム中...（数値を思い出してください）</span>
+            </div>
+            <span class="text-[10px] bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">思考中</span>
           </div>
 
           <!-- 解答後の用語解説＆詳細解説カード（ハイライト追従） -->
@@ -1230,6 +1337,12 @@
               <option v-for="ch in chapters" :key="ch.id" :value="ch.id">{{ ch.name }}</option>
             </select>
 
+            <label class="text-slate-400 ml-2">出題年度:</label>
+            <select v-model="quizFilterYear" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="ALL">全年度 (ALL)</option>
+              <option v-for="y in pastExamYears" :key="y.year" :value="y.year">{{ y.name }} ({{ y.count }}問)</option>
+            </select>
+
             <label class="flex items-center gap-1 text-slate-300 ml-2 cursor-pointer">
               <input type="checkbox" v-model="quizOnlyBookmarked" class="rounded bg-slate-950 border-slate-700 text-sky-500 focus:ring-0">
               <span>⭐ 要復習のみ</span>
@@ -1277,6 +1390,7 @@
           <div class="flex items-center justify-between mt-2 mb-4 flex-wrap gap-2">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="bg-slate-800 text-sky-400 text-xs px-2.5 py-0.5 rounded-full font-medium">{{ currentQuestion.chapterName || currentQuestion.category }}</span>
+              <span v-if="currentQuestion.yearLabel" class="bg-amber-950/80 text-amber-300 border border-amber-700/50 text-[11px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1"><span>🏛️</span><span>{{ currentQuestion.yearLabel }} 出題</span></span>
               <span v-if="currentQuestion.difficulty" class="bg-amber-950/80 text-amber-300 border border-amber-700/50 text-[11px] px-2 py-0.5 rounded-md">{{ currentQuestion.difficulty }}</span>
               <!-- 音声再生中フェーズバッジ -->
               <span v-if="activeSpeechCardId === currentQuestion.id && isSpeaking" class="text-[10px] bg-sky-950 text-sky-300 border border-sky-600 px-2 py-0.5 rounded-full font-bold animate-pulse flex items-center gap-1">
@@ -1364,7 +1478,23 @@
                   {{ getQuestionType(currentQuestion) === 'futekitou' ? '（適当な記述）' : getQuestionType(currentQuestion) === 'hanyou_nai' ? '（該当する項目）' : '（不適当な記述）' }}
                 </span>
               </template>
+
+              <!-- 🔊 音声読上げ中インジケーター -->
+              <span v-if="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'option' && activeSpeechOptionIndex === idx" 
+                    class="text-indigo-300 font-bold text-[11px] shrink-0 self-center flex items-center gap-1 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-500/60 animate-pulse">
+                <span>🔊 読上げ中</span>
+              </span>
             </button>
+          </div>
+
+          <!-- 🤔 ドリル演習 シンキングタイム表示バナー -->
+          <div v-if="activeSpeechCardId === currentQuestion.id && activeSpeechPhase === 'thinking'" 
+               class="my-3 p-3.5 rounded-xl bg-gradient-to-r from-amber-950/80 to-slate-900 border border-amber-500/80 text-amber-200 text-xs font-bold flex items-center justify-between shadow-xl ring-2 ring-amber-500/40 animate-pulse">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">⏳</span>
+              <span>シンキングタイム中...（頭の中で正解肢を想定してください）</span>
+            </div>
+            <span class="text-[10px] bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full font-bold">思考中</span>
           </div>
 
           <div v-if="hasAnswered" class="space-y-4 pt-4 border-t border-slate-800">
@@ -1503,6 +1633,11 @@
               <option value="ALL">全工種</option>
               <option v-for="ch in chapters" :key="ch.id" :value="ch.id">{{ ch.name }}</option>
             </select>
+
+            <select v-model="selectedCheatYear" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="ALL">全年度 (ALL)</option>
+              <option v-for="y in pastExamYears" :key="y.year" :value="y.year">{{ y.name }} ({{ y.count }}問)</option>
+            </select>
           </div>
         </div>
 
@@ -1518,6 +1653,7 @@
               <div class="flex items-center justify-between gap-2 mb-2.5">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-[11px] bg-slate-800 text-sky-400 px-2 py-0.5 rounded-full font-medium">{{ q.chapterName || q.category }}</span>
+                  <span v-if="q.yearLabel" class="text-[11px] bg-amber-950/80 text-amber-300 border border-amber-700/60 px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><span>🏛️</span><span>{{ q.yearLabel }} 出題</span></span>
                   <span class="text-[11px] font-mono px-2 py-0.5 rounded-full font-bold border"
                         :class="getQuestionType(q) === 'futekitou' ? 'bg-rose-950/80 text-rose-300 border-rose-800' : getQuestionType(q) === 'hanyou_nai' ? 'bg-amber-950/80 text-amber-300 border-amber-800' : 'bg-emerald-950/80 text-emerald-300 border-emerald-800'">
                     正答: 肢{{ q.correctIndex + 1 }}（{{ getQuestionType(q) === 'futekitou' ? '不適当' : getQuestionType(q) === 'hanyou_nai' ? '該当しない' : '適当' }}）
@@ -1909,6 +2045,9 @@
       </div>
     </div>
 
+    <!-- 下部フローティングプレイヤー用スペーサー -->
+    <div v-if="isAudioActive" class="h-28 md:h-32 w-full shrink-0"></div>
+
     <!-- 🏷️ フッター：PC・スマホ共通 Ver追跡表示 -->
     <footer class="mt-8 mb-4 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1 select-none">
       <div class="font-medium text-slate-300 text-sm">1級建築施工管理技士補</div>
@@ -1920,9 +2059,162 @@
 
     </div> <!-- /v-else メインコンテンツ -->
 
+    <!-- 🎧 全モード対応：聞き流し耳学・音声再生リアルタイム可視化 HUD (Now Playing Player) -->
+    <div 
+      v-if="isAudioActive"
+      class="fixed bottom-3 md:bottom-5 left-1/2 -translate-x-1/2 z-50 w-[96vw] max-w-4xl transition-all duration-300 pointer-events-auto"
+      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }">
+      
+      <!-- 展開時: 詳細リッチHUDプレイヤー -->
+      <div 
+        v-if="!isListeningHudCollapsed"
+        class="bg-slate-900/95 backdrop-blur-xl border border-sky-500/40 rounded-2xl shadow-2xl shadow-sky-950/70 p-3 sm:p-4 text-white ring-1 ring-white/10 flex flex-col gap-2.5 animate-fade-in">
+        
+        <!-- 上段：イコライザー、モード、フェーズバッジ、進捗率、速度変更、最小化 -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <!-- 左側: イコライザー & モード & フェーズバッジ -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- 🎵 リアルタイム・音声波形イコライザー -->
+            <div class="flex items-end gap-1 h-5 px-2 py-0.5 rounded-lg bg-slate-950/80 border border-slate-700/60"
+                 :class="currentPhaseInfo.waveColor">
+              <span class="eq-bar eq-bar-1" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+              <span class="eq-bar eq-bar-2" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+              <span class="eq-bar eq-bar-3" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+              <span class="eq-bar eq-bar-4" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+              <span class="eq-bar eq-bar-5" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+            </div>
+
+            <!-- モード名バッジ -->
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-300 border border-slate-700 flex items-center gap-1 shadow-sm">
+              <span>{{ activeListeningModeIcon }}</span>
+              <span>{{ activeListeningModeLabel }}</span>
+            </span>
+
+            <!-- 現在の読み上げフェーズバッジ -->
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 shadow-sm transition-all"
+                  :class="currentPhaseInfo.badgeClass">
+              <span>{{ currentPhaseInfo.icon }}</span>
+              <span>{{ currentPhaseInfo.label }}</span>
+            </span>
+          </div>
+
+          <!-- 右側: 進捗カウント ＆ 速度変更 ＆ 最小化トグル -->
+          <div class="flex items-center gap-2">
+            <!-- 進捗率バッジ -->
+            <span v-if="currentSpeechProgress.label" class="text-xs font-mono font-bold text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-800">
+              {{ currentSpeechProgress.label }} ({{ currentSpeechProgress.percent }}%)
+            </span>
+
+            <!-- 速度切替ボタン -->
+            <button 
+              @click="cycleSpeechRate"
+              class="text-xs font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center gap-1 transition-all active:scale-95"
+              title="タップで速度を変更（1.0x → 1.2x → 1.4x → 0.85x）">
+              <span>⚡</span>
+              <span>{{ speechRate.toFixed(1) }}x</span>
+            </button>
+
+            <!-- 最小化ボタン -->
+            <button 
+              @click="isListeningHudCollapsed = true"
+              class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              title="プレイヤーを最小化">
+              <span>▼</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 中段：タイトル ＆ リアルタイム発話字幕（耳で聴いているテキストを可視化） -->
+        <div class="bg-slate-950/80 rounded-xl p-2.5 border border-slate-800/90 shadow-inner">
+          <div v-if="currentSpeechItemTitle" class="text-[11px] font-bold text-slate-400 mb-1 flex items-center gap-1">
+            <span>📖</span>
+            <span class="text-sky-300">{{ currentSpeechItemTitle }}</span>
+          </div>
+          <!-- リアルタイム字幕 -->
+          <div class="text-xs sm:text-sm font-medium text-slate-100 leading-relaxed min-h-[1.5rem] flex items-center gap-2">
+            <span v-if="activeSpeechPhase === 'thinking'" class="text-amber-300 font-bold flex items-center gap-1.5 animate-pulse">
+              <span>⏳</span>
+              <span>シンキングタイム中...（頭の中で正解肢を想定してください）</span>
+            </span>
+            <span v-else-if="currentSpokenText" class="text-slate-100 tracking-wide select-text">
+              {{ currentSpokenText }}
+            </span>
+            <span v-else class="text-slate-500 italic">
+              音声を準備中...
+            </span>
+          </div>
+        </div>
+
+        <!-- 下段：進捗バー ＆ コントロール（スキップ・停止） -->
+        <div class="flex items-center justify-between gap-2 pt-0.5">
+          <!-- 全体進捗バー -->
+          <div class="flex-1 bg-slate-800/80 h-1.5 rounded-full overflow-hidden mr-2">
+            <div 
+              class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300"
+              :style="{ width: currentSpeechProgress.percent + '%' }"></div>
+          </div>
+
+          <!-- コントロールボタン群 -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- ⏪ 前の問へ -->
+            <button 
+              v-if="isAnyAutoPlay"
+              @click="skipToPrevSpeechItem"
+              class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 flex items-center gap-1"
+              title="前の問題へ">
+              <span>⏮</span>
+              <span class="hidden sm:inline">前へ</span>
+            </button>
+
+            <!-- ⏹ 停止ボタン -->
+            <button 
+              @click="stopSpeech"
+              class="px-3.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold border border-rose-400/80 transition-all active:scale-95 shadow-md shadow-rose-600/30 flex items-center gap-1"
+              title="音声を停止">
+              <span>⏹</span>
+              <span>停止</span>
+            </button>
+
+            <!-- ⏩ 次の問へ -->
+            <button 
+              v-if="isAnyAutoPlay"
+              @click="skipToNextSpeechItem"
+              class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 flex items-center gap-1"
+              title="次の問題へ">
+              <span class="hidden sm:inline">次へ</span>
+              <span>⏭</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 最小化時: スリムなフローティングピル -->
+      <div 
+        v-else
+        @click="isListeningHudCollapsed = false"
+        class="bg-slate-900/95 backdrop-blur-xl border border-sky-500/60 rounded-full shadow-2xl p-2 px-4 text-white flex items-center justify-between gap-3 cursor-pointer hover:border-sky-400 transition-all animate-bounce">
+        <div class="flex items-center gap-2">
+          <!-- 波形 -->
+          <div class="flex items-end gap-1 h-4" :class="currentPhaseInfo.waveColor">
+            <span class="eq-bar eq-bar-1" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+            <span class="eq-bar eq-bar-2" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+            <span class="eq-bar eq-bar-3" :class="{ 'eq-bar-paused': !isSpeaking }"></span>
+          </div>
+          <span class="text-xs font-bold text-sky-300">{{ activeListeningModeLabel }}</span>
+          <span class="text-xs text-slate-300">[{{ currentPhaseInfo.label }}]</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button @click.stop="stopSpeech" class="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold">⏹ 停止</button>
+          <span class="text-xs text-slate-400 font-bold">▲ 展開</span>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <script src="app.js?v=3.2.5"></script>
+  <script src="app.js?v=3.4.0"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -1937,7 +2229,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.2.5')
+        navigator.serviceWorker.register('./sw.js?v=3.4.0')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック

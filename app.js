@@ -54,7 +54,7 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
-    const appVersion = ref('Ver.3.2.5');
+    const appVersion = ref('Ver.3.4.0');
 
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
@@ -690,7 +690,7 @@ createApp({
       s = s.replace(/建方|建て方/g, "たてかた");
       s = s.replace(/本締め/g, "ほんじめ");
       s = s.replace(/建入れ直し/g, "たていれなおし");
-      s = s.replace(/玉掛け/g, "たまかけ");
+      s = s.replace(/玉掛け|玉掛/g, "たまがけ");
       s = s.replace(/地切り/g, "じぎり");
       s = s.replace(/合番/g, "あいばん");
       s = s.replace(/通しダイアフラム/g, "とおしダイアフラム");
@@ -739,8 +739,18 @@ createApp({
       s = s.replace(/立上り|立ち上がり/g, "たちあがり");
       s = s.replace(/入隅/g, "いりずみ");
       s = s.replace(/出隅/g, "でずみ");
+      s = s.replace(/面落ち/g, "つらおち");
+      s = s.replace(/面一/g, "つらいち");
       s = s.replace(/面木/g, "めんき");
       s = s.replace(/脱気筒/g, "だっきとう");
+      s = s.replace(/ワーキングジョイント/g, "ワーキング ジョイント");
+      s = s.replace(/ボンドブレーカー/g, "ボンドブレーカー");
+      s = s.replace(/バックアップ材/g, "バックアップざい");
+      s = s.replace(/せっこうボード|石膏ボード/g, "せっこうボード");
+      s = s.replace(/圧着張り/g, "あっちゃくばり");
+      s = s.replace(/改良圧着張り/g, "かいりょう あっちゃくばり");
+      s = s.replace(/密着張り/g, "みっちゃくばり");
+      s = s.replace(/モザイクタイル張り/g, "モザイクタイルばり");
       s = s.replace(/目地/g, "めじ");
       s = s.replace(/深目地/g, "ふかめじ");
       s = s.replace(/眠り目地/g, "ねむりめじ");
@@ -830,6 +840,33 @@ createApp({
       s = s.replace(/1級/g, "いっきゅう");
       s = s.replace(/2級/g, "にきゅう");
       s = s.replace(/技士補/g, "ぎしほ");
+
+      // 【元号・出題年度・過去問（「もととし」等の誤読防止）】
+      s = s.replace(/令和6年度|令和６年度/g, "れいわ ろくねんど ");
+      s = s.replace(/令和6年|令和６年|2024年/g, "れいわ ろくねん ");
+      s = s.replace(/令和5年度|令和５年度/g, "れいわ ごねんど ");
+      s = s.replace(/令和5年|令和５年|2023年/g, "れいわ ごねん ");
+      s = s.replace(/令和4年度|令和４年度/g, "れいわ よねんど ");
+      s = s.replace(/令和4年|令和４年|2022年/g, "れいわ よねん ");
+      s = s.replace(/令和3年度|令和３年度/g, "れいわ さんねんど ");
+      s = s.replace(/令和3年|令和３年|2021年/g, "れいわ さんねん ");
+      s = s.replace(/令和2年度|令和２年度/g, "れいわ にねんど ");
+      s = s.replace(/令和2年|令和２年|2020年/g, "れいわ にねん ");
+      s = s.replace(/令和元年度|令和１年度|令和1年度/g, "れいわ がんねんど ");
+      s = s.replace(/令和元年|令和１年|令和1年|2019年/g, "れいわ がんねん ");
+      s = s.replace(/平成30年|2018年/g, "へいせい さんじゅうねん ");
+      s = s.replace(/\bR6\b/gi, "れいわ ろくねん ");
+      s = s.replace(/\bR5\b/gi, "れいわ ごねん ");
+      s = s.replace(/\bR4\b/gi, "れいわ よねん ");
+      s = s.replace(/\bR3\b/gi, "れいわ さんねん ");
+      s = s.replace(/\bR2\b/gi, "れいわ にねん ");
+      s = s.replace(/\bR1\b/gi, "れいわ がんねん ");
+      s = s.replace(/本試験過去問|過去問演習/g, "ほんしけん かこもん えんしゅう ");
+      s = s.replace(/本試験出題/g, "ほんしけん しゅつだい ");
+      s = s.replace(/本試験/g, "ほんしけん ");
+      s = s.replace(/過去問/g, "かこもん ");
+      s = s.replace(/第一次検定|第1次検定/g, "だいいちじ けんてい ");
+      s = s.replace(/出題/g, "しゅつだい ");
 
       // 【設問特有・正誤判定キーワード】
       s = s.replace(/最も不適当なもの/g, "もっとも ふてきとうなもの");
@@ -1068,8 +1105,277 @@ createApp({
 
     // 読み上げ中のカードIDと現在フェーズ・選択肢インデックス（画面のリアルタイム可視化＆自動スクロール追従連動）
     const activeSpeechCardId = ref(null);
-    const activeSpeechPhase = ref(''); // 'question' | 'option' | 'thinking' | 'answer' | 'explanation' | 'trap' | 'field' | 'glossary'
+    const activeSpeechPhase = ref(''); // 'question' | 'option' | 'thinking' | 'answer' | 'explanation' | 'trap' | 'field' | 'glossary' | 'review'
     const activeSpeechOptionIndex = ref(null); // 0 | 1 | 2 | 3
+
+    // 🎧 全モード聞き流し・耳学リアルタイム可視化 HUD ステート
+    const currentSpokenText = ref(''); // 現在読み上げ中の文章・リアルタイム字幕
+    const currentSpeechItemTitle = ref(''); // 現在読み上げ中の大問タイトル・カテゴリ
+    const isListeningHudCollapsed = ref(false); // HUDの展開・最小化
+
+    const isAnyAutoPlay = computed(() => {
+      return isAutoPlay.value || 
+             isReviewAutoPlay.value || 
+             isExamAutoPlay.value || 
+             isExamReviewAutoPlay.value || 
+             isQuizAutoPlay.value || 
+             isCheatAutoPlay.value;
+    });
+
+    const isAudioActive = computed(() => {
+      return isAnyAutoPlay.value || (isSpeaking.value && activeSpeechCardId.value !== null);
+    });
+
+    const activeListeningModeLabel = computed(() => {
+      if (isExamAutoPlay.value) return '実戦テスト聞き流し';
+      if (isExamReviewAutoPlay.value) return '採点結果・復習聞き流し';
+      if (isQuizAutoPlay.value) return '工種別ドリル聞き流し';
+      if (isCheatAutoPlay.value) return '罠チートシート聞き流し';
+      if (isAutoPlay.value) return '即解ワード通勤耳学';
+      if (isReviewAutoPlay.value) return '即解ワード復習耳学';
+      if (isSpeaking.value) return '単体音声読み上げ';
+      return '耳学リスニング';
+    });
+
+    const activeListeningModeIcon = computed(() => {
+      if (isExamAutoPlay.value) return '🎧';
+      if (isExamReviewAutoPlay.value) return '🔄';
+      if (isQuizAutoPlay.value) return '⏱️';
+      if (isCheatAutoPlay.value) return '🚨';
+      if (isAutoPlay.value) return '🚗';
+      if (isReviewAutoPlay.value) return '📖';
+      return '🔊';
+    });
+
+    const currentSpeechProgress = computed(() => {
+      if (isExamAutoPlay.value) {
+        const total = examQuestions.value.length || 1;
+        const current = currentExamIndex.value + 1;
+        return {
+          current,
+          total,
+          percent: Math.min(100, Math.round((current / total) * 100)),
+          label: `第${current} / ${total}問`
+        };
+      }
+      if (isQuizAutoPlay.value) {
+        const total = activeQuizQuestions.value.length || 1;
+        const current = currentQuizIndex.value + 1;
+        return {
+          current,
+          total,
+          percent: Math.min(100, Math.round((current / total) * 100)),
+          label: `第${current} / ${total}問`
+        };
+      }
+      if (isCheatAutoPlay.value) {
+        const total = filteredCheatSheetQuestions.value.length || 1;
+        const current = currentCheatSpeechIndex.value + 1;
+        return {
+          current,
+          total,
+          percent: Math.min(100, Math.round((current / total) * 100)),
+          label: `${current} / ${total}項目`
+        };
+      }
+      if (isExamReviewAutoPlay.value) {
+        const total = filteredExamReviewList.value.length || 1;
+        const current = currentExamReviewSpeechIndex.value + 1;
+        return {
+          current,
+          total,
+          percent: Math.min(100, Math.round((current / total) * 100)),
+          label: `復習 ${current} / ${total}問`
+        };
+      }
+      if (isAutoPlay.value) {
+        const total = wordSessionWords.value.length || 1;
+        const current = currentWordIndex.value + 1;
+        return {
+          current,
+          total,
+          percent: Math.min(100, Math.round((current / total) * 100)),
+          label: `暗記 ${current} / ${total}語`
+        };
+      }
+      return { current: 1, total: 1, percent: 100, label: '' };
+    });
+
+    const currentPhaseInfo = computed(() => {
+      switch (activeSpeechPhase.value) {
+        case 'question':
+          return { 
+            label: '問題文 読上げ中', 
+            icon: '📌', 
+            badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-400/50',
+            waveColor: 'text-sky-400' 
+          };
+        case 'option':
+          const optStr = activeSpeechOptionIndex.value !== null ? `肢 ${activeSpeechOptionIndex.value + 1}` : '選択肢';
+          return { 
+            label: `${optStr} 読上げ中`, 
+            icon: '🔢', 
+            badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50',
+            waveColor: 'text-indigo-400'
+          };
+        case 'thinking':
+          return { 
+            label: '思考タイム（シンキング中）', 
+            icon: '⏳', 
+            badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/50 animate-pulse',
+            waveColor: 'text-amber-400'
+          };
+        case 'answer':
+          return { 
+            label: '正解発表', 
+            icon: '🎯', 
+            badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50',
+            waveColor: 'text-emerald-400'
+          };
+        case 'explanation':
+          return { 
+            label: '解説・正解根拠', 
+            icon: '💡', 
+            badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50',
+            waveColor: 'text-emerald-400'
+          };
+        case 'trap':
+          return { 
+            label: '出題者の引っ掛け罠！', 
+            icon: '🚨', 
+            badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-400/50',
+            waveColor: 'text-amber-400'
+          };
+        case 'field':
+          return { 
+            label: '現場工事長の知見', 
+            icon: '📐', 
+            badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50',
+            waveColor: 'text-cyan-400'
+          };
+        case 'review':
+          return { 
+            label: '見直し・復習', 
+            icon: '🔄', 
+            badgeClass: 'bg-violet-500/20 text-violet-300 border-violet-400/50',
+            waveColor: 'text-violet-400'
+          };
+        default:
+          return { 
+            label: isSpeaking.value ? '音声再生中' : '耳学スタンバイ', 
+            icon: '🔊', 
+            badgeClass: 'bg-slate-700/60 text-slate-300 border-slate-600/50',
+            waveColor: 'text-sky-400'
+          };
+      }
+    });
+
+    const cycleSpeechRate = () => {
+      const rates = [1.0, 1.2, 1.4, 0.85];
+      const current = Number(speechRate.value) || 1.0;
+      const idx = rates.findIndex(r => Math.abs(r - current) < 0.05);
+      const nextIdx = idx >= 0 ? (idx + 1) % rates.length : 0;
+      speechRate.value = rates[nextIdx];
+      showSpeechToast(`⚡ 再生速度を ${speechRate.value} 倍速 に変更しました`, 'info', 2000);
+    };
+
+    const skipToNextSpeechItem = () => {
+      if (isExamAutoPlay.value) {
+        stopSpeech();
+        isExamAutoPlay.value = true;
+        if (currentExamIndex.value < examQuestions.value.length - 1) {
+          currentExamIndex.value++;
+          playExamAutoCycle();
+        } else {
+          finishExam();
+        }
+        return;
+      }
+      if (isQuizAutoPlay.value) {
+        stopSpeech();
+        isQuizAutoPlay.value = true;
+        if (currentQuizIndex.value < activeQuizQuestions.value.length - 1) {
+          currentQuizIndex.value++;
+          playQuizAutoCycle();
+        }
+        return;
+      }
+      if (isCheatAutoPlay.value) {
+        stopSpeech();
+        isCheatAutoPlay.value = true;
+        if (currentCheatSpeechIndex.value < filteredCheatSheetQuestions.value.length - 1) {
+          currentCheatSpeechIndex.value++;
+          playCheatAutoCycle();
+        }
+        return;
+      }
+      if (isExamReviewAutoPlay.value) {
+        stopSpeech();
+        isExamReviewAutoPlay.value = true;
+        if (currentExamReviewSpeechIndex.value < filteredExamReviewList.value.length - 1) {
+          currentExamReviewSpeechIndex.value++;
+          playExamReviewAutoCycle();
+        }
+        return;
+      }
+      if (isAutoPlay.value) {
+        stopSpeech();
+        isAutoPlay.value = true;
+        if (currentWordIndex.value < wordSessionWords.value.length - 1) {
+          nextWord();
+          playWordAutoCycle();
+        }
+        return;
+      }
+    };
+
+    const skipToPrevSpeechItem = () => {
+      if (isExamAutoPlay.value) {
+        stopSpeech();
+        isExamAutoPlay.value = true;
+        if (currentExamIndex.value > 0) {
+          currentExamIndex.value--;
+        }
+        playExamAutoCycle();
+        return;
+      }
+      if (isQuizAutoPlay.value) {
+        stopSpeech();
+        isQuizAutoPlay.value = true;
+        if (currentQuizIndex.value > 0) {
+          currentQuizIndex.value--;
+        }
+        playQuizAutoCycle();
+        return;
+      }
+      if (isCheatAutoPlay.value) {
+        stopSpeech();
+        isCheatAutoPlay.value = true;
+        if (currentCheatSpeechIndex.value > 0) {
+          currentCheatSpeechIndex.value--;
+        }
+        playCheatAutoCycle();
+        return;
+      }
+      if (isExamReviewAutoPlay.value) {
+        stopSpeech();
+        isExamReviewAutoPlay.value = true;
+        if (currentExamReviewSpeechIndex.value > 0) {
+          currentExamReviewSpeechIndex.value--;
+        }
+        playExamReviewAutoCycle();
+        return;
+      }
+      if (isAutoPlay.value) {
+        stopSpeech();
+        isAutoPlay.value = true;
+        if (currentWordIndex.value > 0) {
+          prevWord();
+        }
+        playWordAutoCycle();
+        return;
+      }
+    };
 
     // 読み上げ位置へのスムーズ自動スクロール追従関数
     const scrollToSpeechTarget = (targetId, block = 'nearest') => {
@@ -1131,6 +1437,8 @@ createApp({
       activeSpeechCardId.value = null;
       activeSpeechPhase.value = '';
       activeSpeechOptionIndex.value = null;
+      currentSpokenText.value = '';
+      currentSpeechItemTitle.value = '';
       releaseWakeLock();
     };
 
@@ -1264,6 +1572,7 @@ createApp({
         if (onEndCallback) onEndCallback();
         return;
       }
+      currentSpokenText.value = text;
 
       // Android 15〜20秒ウォッチドッグ制限回避：小チャンク（2〜5秒）に分割して連鎖再生
       const chunks = splitTextIntoSpeechChunks(spokenText);
@@ -1296,6 +1605,7 @@ createApp({
 
         const chunkText = chunks[chunkIndex];
         chunkIndex++;
+        currentSpokenText.value = chunkText;
 
         const utterance = new SpeechSynthesisUtterance(chunkText);
         utterance.lang = 'ja-JP';
@@ -1363,6 +1673,7 @@ createApp({
       if (!w || !w.question) return;
 
       activeSpeechCardId.value = w.id;
+      currentSpeechItemTitle.value = `即解ワード 第${currentWordIndex.value + 1}問【${w.category || ''}】${w.topic || ''}`;
       if (!hasAnsweredWord.value) {
         // 問題文読み上げ & ハイライト追従
         activeSpeechPhase.value = 'question';
@@ -1430,6 +1741,8 @@ createApp({
         return;
       }
       activeSpeechCardId.value = w.id;
+      currentSpeechItemTitle.value = `即解ワード復習【${w.category || ''}】${w.term || w.topic || ''}`;
+      activeSpeechPhase.value = 'review';
       scrollToSpeechTarget(`word-review-item-${w.id}`, 'center');
       const glossaryText = w.termGlossary ? `現場用語解説。${w.term || w.topic}。${w.termGlossary}。` : '';
       const hintText = w.hint ? `ポイント。${w.hint}。` : '';
@@ -1437,6 +1750,7 @@ createApp({
       speakText(speechContent, () => {
         if (activeSpeechCardId.value === w.id) {
           activeSpeechCardId.value = null;
+          activeSpeechPhase.value = '';
         }
       });
     };
@@ -1466,6 +1780,7 @@ createApp({
       if (!w || !w.question) return;
 
       activeSpeechCardId.value = w.id;
+      currentSpeechItemTitle.value = `即解ワード 第${currentWordIndex.value + 1}問【${w.category || ''}】${w.topic || ''}`;
       activeSpeechOptionIndex.value = null;
       scrollToSpeechTarget('word-card', 'center');
 
@@ -1478,6 +1793,7 @@ createApp({
 
         // 2. シンキングタイム（2.2秒の間）
         activeSpeechPhase.value = 'thinking';
+        currentSpokenText.value = '🤔 シンキングタイム中...（数値を思い出してください）';
         autoPlayTimer = setTimeout(() => {
           if (!isAutoPlay.value) return;
 
@@ -1616,10 +1932,59 @@ createApp({
       return Object.keys(examUserAnswers.value).filter(k => examUserAnswers.value[k] !== null).length;
     });
 
+    const pastExamYears = ref([
+      { year: 2024, name: '令和6年度（2024年）', count: 24, badge: '最新出題', desc: '新労働基準法・最新施工基準に完全対応した最新過去問！' },
+      { year: 2023, name: '令和5年度（2023年）', count: 16, badge: '頻出重要', desc: 'RC・鉄骨・山留め・防水の急所が網羅された重要本試験過去問！' },
+      { year: 2022, name: '令和4年度（2022年）', count: 15, badge: '標準出題', desc: '標準仕様書改定に伴う重要数値・管理基準を問う実践過去問！' },
+      { year: 2021, name: '令和3年度（2021年）', count: 10, badge: '制度開始年', desc: '施工管理技士補制度開始初年度の厳選過去問！' },
+      { year: 2020, name: '令和2年度（2020年）', count: 8, badge: '定番出題', desc: '測量・地盤・安全管理の合否を分ける定番過去問！' },
+      { year: 2019, name: '令和元年度（2019年）', count: 7, badge: '基礎徹底', desc: '躯体・仕上・リサイクル法の基礎を盤石にする過去問！' }
+    ]);
+
+    const getPastExamYearName = (year) => {
+      const target = pastExamYears.value.find(y => y.year === Number(year));
+      return target ? target.name : `${year}年度`;
+    };
+
     const getExamModeTitle = () => {
       if (selectedExamMode.value === 'speed10') return '⚡ タイムリー10分版（15問）';
       if (selectedExamMode.value === 'intensive20') return '🧠 濃縮20分版 [即時解説＆現場知見付き]（25問）';
+      if (selectedExamMode.value && selectedExamMode.value.startsWith('past_')) {
+        const y = selectedExamMode.value.replace('past_', '');
+        return `🏛️ ${getPastExamYearName(y)} 過去問本試験演習（全${examQuestions.value.length}問）`;
+      }
       return '🏆 本番72問フル模試（120分 / 72問選択解答シミュレーション）';
+    };
+
+    const startPastExam = (year) => {
+      const targetYear = Number(year);
+      const qs = allQuestions.value.filter(q => q.year === targetYear);
+      if (qs.length === 0) {
+        showSpeechToast('⚠️ 選択した年度の問題がありません', 'warn');
+        return;
+      }
+      selectedExamMode.value = 'past_' + targetYear;
+      examQuestions.value = [...qs];
+      for (let i = 0; i < qs.length; i++) {
+        examUserAnswers.value[i] = null;
+        examMarks.value[i] = false;
+      }
+      currentExamIndex.value = 0;
+      examTimeRemaining.value = qs.length * 60; // 1問1分換算
+      isExamStarted.value = true;
+      isExamFinished.value = false;
+
+      clearInterval(examTimerInterval);
+      examTimerInterval = setInterval(() => {
+        if (examTimeRemaining.value > 0) {
+          examTimeRemaining.value--;
+        } else {
+          finishExam();
+        }
+      }, 1000);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showSpeechToast(`🏛️ ${getPastExamYearName(targetYear)} 過去問演習開始（全${qs.length}問）`, 'info', 3000);
     };
 
     const startSpecificExam = (mode) => {
@@ -1742,12 +2107,14 @@ createApp({
 
       const qNum = currentExamIndex.value + 1;
       const cat = q.chapterName || q.category || '';
+      const yearStr = q.yearLabel ? `${q.yearLabel}本試験出題。` : '';
       const opts = q.options || [];
+      currentSpeechItemTitle.value = `${q.yearLabel ? q.yearLabel + ' ' : ''}実戦テスト 第${qNum}問【${cat}】`;
 
       // Step 1: 問題文の読み上げ & ハイライト追従
       activeSpeechPhase.value = 'question';
       scrollToSpeechTarget('exam-q-box', 'nearest');
-      const qSpeech = `第${qNum}問。${cat}。問題。${q.question}。`;
+      const qSpeech = `第${qNum}問。${yearStr}${cat}。問題。${q.question}。`;
 
       speakText(qSpeech, () => {
         if (activeSpeechCardId.value !== q.id) return;
@@ -1773,6 +2140,7 @@ createApp({
           if (activeSpeechCardId.value !== q.id) return;
           // Step 3: シンキングタイム (2.2秒)
           activeSpeechPhase.value = 'thinking';
+          currentSpokenText.value = '🤔 シンキングタイム中...（頭の中で正解肢を想定してください）';
           examAutoTimer = setTimeout(() => {
             if (activeSpeechCardId.value !== q.id) return;
 
@@ -2072,7 +2440,12 @@ createApp({
 
     // 同一設定での最初からのフル再試験
     const restartCurrentExam = () => {
-      startSpecificExam(selectedExamMode.value);
+      if (selectedExamMode.value && selectedExamMode.value.startsWith('past_')) {
+        const y = selectedExamMode.value.replace('past_', '');
+        startPastExam(y);
+      } else {
+        startSpecificExam(selectedExamMode.value);
+      }
     };
 
     // 個別問題のブックマーク切り替え（結果画面用）
@@ -2116,13 +2489,16 @@ createApp({
       const item = list[currentExamReviewSpeechIndex.value];
       const q = item.q;
       activeSpeechCardId.value = q.id;
-      scrollToSpeechTarget(`exam-review-item-${q.id}`, 'center');
-
       const num = currentExamReviewSpeechIndex.value + 1;
       const cat = q.chapterName || q.category || '施工';
+      const yearStr = q.yearLabel ? `${q.yearLabel}本試験出題。` : '';
+      currentSpeechItemTitle.value = `${q.yearLabel ? q.yearLabel + ' ' : ''}復習 第${num}問【${cat}】`;
+      activeSpeechPhase.value = 'review';
+      scrollToSpeechTarget(`exam-review-item-${q.id}`, 'center');
+
       const statusText = item.isCorrect ? '正解した問題です。' : '見直しが必要な問題です。あなたの回答は誤りでした。';
       const ansDetail = getAnswerSpeechText(q, item.userAnswer);
-      const reviewSpeech = `復習第${num}問。${cat}。${statusText}問題。${q.question}。${ansDetail}`;
+      const reviewSpeech = `復習第${num}問。${yearStr}${cat}。${statusText}問題。${q.question}。${ansDetail}`;
 
       speakText(reviewSpeech, () => {
         if (!isExamReviewAutoPlay.value) return;
@@ -2145,6 +2521,7 @@ createApp({
     // ⏱️ 工種別・章別ドリル演習（40秒タイマー）
     // ==========================================
     const quizFilterChapter = ref('ALL');
+    const quizFilterYear = ref('ALL');
     const quizOnlyBookmarked = ref(false);
     const quizRandomOrder = ref(false);
     const currentQuizIndex = ref(0);
@@ -2158,6 +2535,9 @@ createApp({
       let list = allQuestions.value;
       if (quizFilterChapter.value !== 'ALL') {
         list = list.filter(q => q.chapterId === quizFilterChapter.value);
+      }
+      if (quizFilterYear.value !== 'ALL') {
+        list = list.filter(q => q.year === Number(quizFilterYear.value));
       }
       if (quizOnlyBookmarked.value) {
         list = list.filter(q => q.isBookmarked);
@@ -2309,7 +2689,9 @@ createApp({
 
       const qNum = currentQuizIndex.value + 1;
       const cat = q.chapterName || q.category || '';
+      const yearStr = q.yearLabel ? `${q.yearLabel}本試験出題。` : '';
       const opts = q.options || [];
+      currentSpeechItemTitle.value = `${q.yearLabel ? q.yearLabel + ' ' : ''}工種別ドリル 第${qNum}問【${cat}】`;
 
       // タイマーを一旦停止
       clearInterval(quizTimerInterval);
@@ -2318,7 +2700,7 @@ createApp({
       // Step 1: 問題文の読み上げ & ハイライト追従
       activeSpeechPhase.value = 'question';
       scrollToSpeechTarget('quiz-q-box', 'nearest');
-      const qSpeech = `ドリル第${qNum}問。${cat}。問題。${q.question}。`;
+      const qSpeech = `ドリル第${qNum}問。${yearStr}${cat}。問題。${q.question}。`;
 
       speakText(qSpeech, () => {
         if (activeSpeechCardId.value !== q.id) return;
@@ -2344,6 +2726,7 @@ createApp({
           if (activeSpeechCardId.value !== q.id) return;
           // Step 3: シンキングタイム (2.0秒)
           activeSpeechPhase.value = 'thinking';
+          currentSpokenText.value = '🤔 シンキングタイム中...（頭の中で正解肢を想定してください）';
           quizAutoTimer = setTimeout(() => {
             if (activeSpeechCardId.value !== q.id) return;
 
@@ -2453,19 +2836,21 @@ createApp({
     // ==========================================
     const cheatSearchQuery = ref('');
     const selectedCheatChapter = ref('ALL');
+    const selectedCheatYear = ref('ALL');
     const cheatPage = ref(1);
     const itemsPerPage = 12;
 
     const filteredCheatSheetQuestions = computed(() => {
       return allQuestions.value.filter(q => {
         const matchChapter = selectedCheatChapter.value === 'ALL' || q.chapterId === selectedCheatChapter.value;
+        const matchYear = selectedCheatYear.value === 'ALL' || q.year === Number(selectedCheatYear.value);
         const query = cheatSearchQuery.value.trim().toLowerCase();
         const matchQuery = !query || 
           (q.question && q.question.toLowerCase().includes(query)) ||
           (q.trapNote && q.trapNote.toLowerCase().includes(query)) ||
           (q.explanation && q.explanation.toLowerCase().includes(query)) ||
           (q.fieldReality && q.fieldReality.toLowerCase().includes(query));
-        return matchChapter && matchQuery;
+        return matchChapter && matchYear && matchQuery;
       });
     });
 
@@ -2478,7 +2863,7 @@ createApp({
       return filteredCheatSheetQuestions.value.slice(start, start + itemsPerPage);
     });
 
-    watch([cheatSearchQuery, selectedCheatChapter], () => {
+    watch([cheatSearchQuery, selectedCheatChapter, selectedCheatYear], () => {
       cheatPage.value = 1;
       if (isCheatAutoPlay.value) {
         stopSpeech();
@@ -2518,13 +2903,15 @@ createApp({
 
       const num = (filteredCheatSheetQuestions.value.findIndex(item => item.id === q.id) + 1) || (currentCheatSpeechIndex.value + 1) || 1;
       const cat = q.chapterName || q.category || '施工';
+      const yearStr = q.yearLabel ? `${q.yearLabel}本試験出題。` : '';
       const opts = q.options || [];
       const correctOptText = (opts && opts[q.correctIndex]) ? opts[q.correctIndex] : '';
+      currentSpeechItemTitle.value = `${q.yearLabel ? q.yearLabel + ' ' : ''}罠チートシート No.${num}【${cat}】`;
 
       // Step 1: 問題文の読み上げ & ハイライト追従
       activeSpeechPhase.value = 'question';
       scrollToSpeechTarget(`cheat-q-${q.id}`, 'nearest');
-      const qSpeech = `第${num}問。${cat}。問題。${q.question}。`;
+      const qSpeech = `第${num}問。${yearStr}${cat}。問題。${q.question}。`;
 
       speakText(qSpeech, () => {
         if (activeSpeechCardId.value !== q.id) return;
@@ -2902,6 +3289,18 @@ createApp({
       activeSpeechCardId,
       activeSpeechPhase,
       activeSpeechOptionIndex,
+      currentSpokenText,
+      currentSpeechItemTitle,
+      isListeningHudCollapsed,
+      isAnyAutoPlay,
+      isAudioActive,
+      activeListeningModeLabel,
+      activeListeningModeIcon,
+      currentSpeechProgress,
+      currentPhaseInfo,
+      cycleSpeechRate,
+      skipToNextSpeechItem,
+      skipToPrevSpeechItem,
       playChimeAndUnlock,
       speakCurrentWord,
       speakItem,
@@ -2949,9 +3348,13 @@ createApp({
       startRetryExam,
       restartCurrentExam,
       toggleQuestionBookmark,
+      pastExamYears,
+      getPastExamYearName,
+      startPastExam,
 
       // Quiz
       quizFilterChapter,
+      quizFilterYear,
       quizOnlyBookmarked,
       quizRandomOrder,
       currentQuizIndex,
@@ -2974,6 +3377,7 @@ createApp({
       // Cheatsheet
       cheatSearchQuery,
       selectedCheatChapter,
+      selectedCheatYear,
       filteredCheatSheetQuestions,
       paginatedCheatQuestions,
       cheatPage,

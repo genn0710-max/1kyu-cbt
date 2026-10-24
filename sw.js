@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v3.2.5-tremie-pronunciation';
+const CACHE_NAME = 'cbt-arch-v3.4.0-past-exams-audio';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
