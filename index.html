@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>1級建築施工管理技士 1次・2次検定 合格ナビ Ver.4.0.0</title>
+  <title>1級建築施工管理技士 1次・2次検定 合格ナビ Ver.4.1.0</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,11 +13,11 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- 600問問題バンク -->
-  <script src="questions_bank.js?v=4.0.0"></script>
+  <script src="questions_bank.js?v=4.1.0"></script>
   <!-- 即解ワード暗記バンク -->
-  <script src="word_bank.js?v=4.0.0"></script>
+  <script src="word_bank.js?v=4.1.0"></script>
   <!-- 2次試験（実地・記述）マスターバンク -->
-  <script src="second_exam_bank.js?v=4.0.0"></script>
+  <script src="second_exam_bank.js?v=4.1.0"></script>
   <!-- モバイル & PWA (iOS / Android) メタタグ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -271,6 +271,13 @@
             :class="activeTab === 'second' ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-extrabold shadow-lg shadow-amber-500/25' : 'text-amber-400 hover:text-amber-200 font-bold border border-amber-500/30'"
             class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0">
             <span>🏆</span> 2次 過去問＆記述
+          </button>
+          <button 
+            @click="switchTab('schedule')"
+            :class="activeTab === 'schedule' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-lg shadow-cyan-500/30 ring-2 ring-cyan-300' : 'text-cyan-300 hover:text-white font-bold border border-cyan-500/40 bg-cyan-950/40'"
+            class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0 select-none">
+            <span>📊</span> 工程管理・CP特化
+            <span class="text-[10px] bg-cyan-400 text-slate-950 px-1.5 py-0.2 rounded-full font-black animate-pulse">特記</span>
           </button>
           <button 
             @click="switchTab('words')"
@@ -1418,6 +1425,25 @@
         <!-- ============================================== -->
         <div v-if="secondExamSubTab === 'network'" class="space-y-5">
           
+          <!-- 🚀 特設工程管理タブへの直通バナー -->
+          <div class="bg-gradient-to-r from-cyan-950 via-slate-900 to-blue-950 border border-cyan-500/50 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="bg-cyan-500 text-slate-950 text-[10px] font-black px-2 py-0.2 rounded-full uppercase">特記新設</span>
+                <span class="text-sm font-black text-white">📊 工程管理・クリティカルパス完全制覇 特設モード</span>
+              </div>
+              <p class="text-xs text-slate-300">
+                8大実践計算ドリル、リアルタイム工期短縮シミュレーター、出来高S字カーブ、1次・2次本試験厳選問題を完備した専用画面が利用可能です！
+              </p>
+            </div>
+            <button 
+              @click="switchTab('schedule')"
+              class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 shrink-0 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
+              <span>🚀</span>
+              <span>工程管理・特化画面へ移動</span>
+            </button>
+          </div>
+          
           <!-- 解法理論カード -->
           <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 md:p-5 shadow">
             <h3 class="text-sm md:text-base font-bold text-emerald-300 flex items-center gap-2 mb-3">
@@ -1642,6 +1668,581 @@
       <!-- ============================================== -->
       <!-- TAB: ⚡ 即解ワード暗記（一問一答フラッシュ） -->
       <!-- ============================================== -->
+      
+      <!-- ============================================== -->
+      <!-- TAB: 📊 工程管理・クリティカルパス特化マスター (Ver.4.1.0 特記新設) -->
+      <!-- ============================================== -->
+      <section v-if="activeTab === 'schedule'" class="flex-1 flex flex-col gap-5 max-w-5xl mx-auto w-full pb-10">
+        
+        <!-- ヘッダーバナー -->
+        <div class="bg-gradient-to-br from-slate-900 via-cyan-950/40 to-slate-900 border border-cyan-500/30 rounded-2xl p-5 md:p-6 shadow-xl relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+            <div>
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <span class="bg-cyan-500 text-slate-950 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">特化マスター</span>
+                <span class="text-xs bg-cyan-950 text-cyan-300 border border-cyan-600/70 px-2.5 py-0.5 rounded-full font-bold">1次・2次検定 合否の最重要関門</span>
+                <span class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-full font-mono">全8大計算ドリル＋リアルタイム計算機</span>
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <span>📊</span> 工程管理・クリティカルパス完全制覇
+              </h2>
+              <p class="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">
+                ネットワーク工程表（EST・LFT・TF・FF）、費用勾配による最短・最小コスト工期短縮、複数クリティカルパスの同時短縮、天候遅延判定、出来高累計曲線（バナナ曲線）を特記マスターします。
+              </p>
+            </div>
+
+            <!-- 音声読み上げボタン -->
+            <button 
+              @click="playSecondAudioItem(0)"
+              class="bg-indigo-900/80 hover:bg-indigo-800 active:scale-95 text-indigo-200 border border-indigo-500/70 text-xs px-3.5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-md shrink-0 cursor-pointer">
+              <span>🎧</span>
+              <span>工程管理公式の暗記耳学</span>
+            </button>
+          </div>
+
+          <!-- サブナビゲーション切り替え -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5 pt-4 border-t border-slate-800/80">
+            <button 
+              @click="scheduleSubTab = 'drill'"
+              :class="scheduleSubTab === 'drill' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/25 ring-2 ring-cyan-300' : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 font-bold'"
+              class="px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>🧮</span> 8大実践計算ドリル
+            </button>
+            <button 
+              @click="scheduleSubTab = 'simulator'"
+              :class="scheduleSubTab === 'simulator' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/25 ring-2 ring-cyan-300' : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 font-bold'"
+              class="px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>⚡</span> リアルタイム計算機
+            </button>
+            <button 
+              @click="scheduleSubTab = 'theory'"
+              :class="scheduleSubTab === 'theory' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/25 ring-2 ring-cyan-300' : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 font-bold'"
+              class="px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>📐</span> 基礎公式＆解法完全ガイド
+            </button>
+            <button 
+              @click="scheduleSubTab = 'exam'"
+              :class="scheduleSubTab === 'exam' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/25 ring-2 ring-cyan-300' : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80 font-bold'"
+              class="px-3 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>🏛️</span> 1次・2次 本試験「工程」特選
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUBTAB 1: 🧮 8大実践計算ドリル -->
+        <!-- ========================================== -->
+        <div v-if="scheduleSubTab === 'drill'" class="space-y-5">
+          <!-- ドリル選択カルーセル/ピル -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-md">
+            <div class="text-xs text-slate-400 font-bold mb-2 flex items-center justify-between">
+              <span>📌 解きたいドリルを選択してください（全8問・出題全パターン網羅）</span>
+              <span class="text-cyan-400 font-mono text-[11px]">{{ selectedScheduleDrillIndex + 1 }} / {{ scheduleDrills.length }} 問</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button 
+                v-for="(drill, idx) in scheduleDrills" 
+                :key="drill.id"
+                @click="selectedScheduleDrillIndex = idx"
+                :class="selectedScheduleDrillIndex === idx ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black shadow-md border-cyan-400 ring-2 ring-cyan-400/50' : 'bg-slate-950/70 hover:bg-slate-800/80 text-slate-300 border-slate-800'"
+                class="p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold px-1.5 py-0.2 rounded" :class="selectedScheduleDrillIndex === idx ? 'bg-cyan-300 text-slate-950' : 'bg-slate-800 text-cyan-300'">
+                    {{ drill.category }}
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-mono">#{{ idx + 1 }}</span>
+                </div>
+                <div class="text-xs font-bold truncate mt-1" :title="drill.title">
+                  {{ drill.title.replace(/^ドリル\d+:\s*/, '') }}
+                </div>
+                <div class="text-[10px] text-slate-400 truncate">
+                  {{ drill.difficulty }}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 選択されたドリルの本体カード -->
+          <div v-if="currentScheduleDrill && currentScheduleDrill.id" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl space-y-5">
+            <!-- タイトルと概要 -->
+            <div class="border-b border-slate-800 pb-4">
+              <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                  {{ currentScheduleDrill.category }}
+                </span>
+                <span class="text-xs bg-slate-800 text-amber-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">
+                  難易度: {{ currentScheduleDrill.difficulty }}
+                </span>
+              </div>
+              <h3 class="text-lg md:text-xl font-black text-white">
+                {{ currentScheduleDrill.title }}
+              </h3>
+              <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed bg-slate-950/80 p-3 rounded-xl border border-slate-800/80">
+                📝 <strong class="text-white">【出題条件】</strong> {{ currentScheduleDrill.description }}
+              </p>
+            </div>
+
+            <!-- 作業条件テーブル（アクティビティ一覧） -->
+            <div v-if="currentScheduleDrill.activities && currentScheduleDrill.activities.length > 0" class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                  <span>📋</span> 作業条件一覧表（アクティビティ）
+                </h4>
+                <span class="text-[11px] text-slate-400">ノード番号と標準所要日数</span>
+              </div>
+              <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-slate-950 text-slate-300 border-b border-slate-800">
+                      <th class="p-2.5 font-bold text-center">作業記号</th>
+                      <th class="p-2.5 font-bold">作業内容</th>
+                      <th class="p-2.5 font-bold text-center">区間 (From → To)</th>
+                      <th class="p-2.5 font-bold text-center">標準日数</th>
+                      <th v-if="currentScheduleDrill.activities.some(a => a.costSlope)" class="p-2.5 font-bold text-center text-amber-400">費用勾配 (追加費用/日)</th>
+                      <th v-if="currentScheduleDrill.activities.some(a => a.rushDays)" class="p-2.5 font-bold text-center text-sky-400">急ぎ日数 (最短)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 bg-slate-900/60 font-mono text-slate-300">
+                    <tr v-for="act in currentScheduleDrill.activities" :key="act.name" class="hover:bg-slate-800/40">
+                      <td class="p-2.5 text-center font-bold text-cyan-400">{{ act.name }}</td>
+                      <td class="p-2.5 font-sans font-medium text-white">{{ act.desc || '-' }}</td>
+                      <td class="p-2.5 text-center">{{ act.from }} → {{ act.to }}</td>
+                      <td class="p-2.5 text-center font-bold" :class="act.days === 0 ? 'text-amber-400' : 'text-white'">
+                        {{ act.days === 0 ? '0日 (ダミー)' : `${act.days}日` }}
+                      </td>
+                      <td v-if="currentScheduleDrill.activities.some(a => a.costSlope)" class="p-2.5 text-center text-amber-300 font-bold">
+                        {{ act.costSlope ? `${act.costSlope}万円/日` : '-' }}
+                      </td>
+                      <td v-if="currentScheduleDrill.activities.some(a => a.rushDays)" class="p-2.5 text-center text-sky-300">
+                        {{ act.rushDays ? `${act.rushDays}日 (限度${act.days - act.rushDays}日)` : '-' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 経路分析（全経路とクリティカルパス） -->
+            <div v-if="currentScheduleDrill.paths && currentScheduleDrill.paths.length > 0" class="space-y-2">
+              <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <span>🛣️</span> 経路分析（各パスの所要日数とクリティカルパス判定）
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div 
+                  v-for="(p, pIdx) in currentScheduleDrill.paths" 
+                  :key="pIdx"
+                  :class="p.isCritical ? 'bg-amber-950/40 border-amber-500/70 text-amber-200 shadow-md shadow-amber-950/30' : 'bg-slate-950/60 border-slate-800 text-slate-300'"
+                  class="p-3 rounded-xl border flex items-center justify-between gap-3 text-xs">
+                  <div class="space-y-1">
+                    <div class="font-mono font-bold text-white flex items-center gap-1.5">
+                      <span>{{ p.route }}</span>
+                      <span v-if="p.isCritical" class="bg-amber-500 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded">★ クリティカルパス</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 font-mono">{{ p.days }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- イベント結合点時刻表（ノード別 EST・LFT） -->
+            <div v-if="currentScheduleDrill.events && currentScheduleDrill.events.length > 0" class="space-y-2">
+              <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <span>⏱️</span> 結合点時刻表（各ノードの EST:最早時刻 / LFT:最遅時刻）
+              </h4>
+              <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div 
+                  v-for="ev in currentScheduleDrill.events" 
+                  :key="ev.node"
+                  :class="ev.est === ev.lft ? 'bg-cyan-950/50 border-cyan-500/60 text-cyan-200' : 'bg-slate-950/70 border-slate-800 text-slate-300'"
+                  class="p-2.5 rounded-xl border text-center space-y-1">
+                  <div class="text-[11px] font-bold text-slate-400">ノード {{ ev.node }}</div>
+                  <div class="text-xs font-mono">EST: <strong class="text-white">{{ ev.est }}日</strong></div>
+                  <div class="text-xs font-mono">LFT: <strong class="text-white">{{ ev.lft }}日</strong></div>
+                  <div class="text-[10px]" :class="ev.est === ev.lft ? 'text-amber-400 font-bold' : 'text-slate-500'">
+                    {{ ev.est === ev.lft ? '★ CPノード' : `余裕${ev.lft - ev.est}日` }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 設問・演習エリア -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-sm font-black text-white flex items-center gap-1.5">
+                  <span>❓</span> 実践設問（自力で解いてみよう）
+                </h4>
+                <button 
+                  @click="revealAllScheduleDrillAnswers(currentScheduleDrill.id)"
+                  class="text-xs text-cyan-400 hover:text-cyan-300 underline font-medium cursor-pointer">
+                  一括ですべての解答を表示
+                </button>
+              </div>
+
+              <!-- 設問リスト -->
+              <div class="space-y-3">
+                <div 
+                  v-for="(qItem, qIdx) in currentScheduleDrill.questionList" 
+                  :key="qIdx"
+                  class="bg-slate-950/80 border border-slate-800/90 rounded-xl p-4 space-y-3">
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="text-xs md:text-sm font-bold text-white leading-relaxed">
+                      {{ qItem.q }}
+                    </p>
+                    <button 
+                      @click="toggleScheduleAnswer(currentScheduleDrill.id, qIdx)"
+                      :class="isScheduleAnswerRevealed(currentScheduleDrill.id, qIdx) ? 'bg-slate-800 text-slate-300' : 'bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black shadow-md'"
+                      class="text-xs px-3 py-1.5 rounded-lg shrink-0 transition-all cursor-pointer">
+                      {{ isScheduleAnswerRevealed(currentScheduleDrill.id, qIdx) ? '解答を隠す' : '💡 解答・解説' }}
+                    </button>
+                  </div>
+
+                  <!-- 展開された解答・解説 -->
+                  <div 
+                    v-if="isScheduleAnswerRevealed(currentScheduleDrill.id, qIdx)"
+                    class="mt-2 pt-3 border-t border-slate-800/80 space-y-2 text-xs animate-fadeIn">
+                    <div class="bg-emerald-950/50 border border-emerald-600/70 p-3 rounded-lg text-emerald-200">
+                      <div class="font-bold text-emerald-400 mb-1 flex items-center gap-1">
+                        <span>✅</span> 模範解答:
+                      </div>
+                      <p class="font-bold text-sm text-white whitespace-pre-wrap">{{ qItem.a }}</p>
+                    </div>
+                    <div v-if="qItem.explanation" class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-slate-300 leading-relaxed">
+                      <div class="font-bold text-cyan-400 mb-1 flex items-center gap-1">
+                        <span>🔍</span> ステップ解説:
+                      </div>
+                      <p class="whitespace-pre-wrap leading-relaxed">{{ qItem.explanation }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 次のドリルへ移動ボタン -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
+              <button 
+                @click="selectedScheduleDrillIndex = Math.max(0, selectedScheduleDrillIndex - 1)"
+                :disabled="selectedScheduleDrillIndex === 0"
+                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-xl transition-all cursor-pointer">
+                ◀ 前のドリル
+              </button>
+              <span class="text-slate-400 font-mono">{{ selectedScheduleDrillIndex + 1 }} / {{ scheduleDrills.length }}</span>
+              <button 
+                @click="selectedScheduleDrillIndex = Math.min(scheduleDrills.length - 1, selectedScheduleDrillIndex + 1)"
+                :disabled="selectedScheduleDrillIndex === scheduleDrills.length - 1"
+                class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-slate-950 font-bold rounded-xl transition-all cursor-pointer">
+                次のドリル ▶
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUBTAB 2: ⚡ リアルタイム計算シミュレーター -->
+        <!-- ========================================== -->
+        <div v-if="scheduleSubTab === 'simulator'" class="space-y-5">
+          <!-- プリセット選択と説明 -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2">
+                  <span>⚡</span> リアルタイム・クリティカルパス＆工期短縮シミュレーター
+                </h3>
+                <p class="text-xs text-slate-300 mt-1">
+                  各作業の「短縮日数」をスライダーで変更すると、全体工期、クリティカルパス、TF、FF、総追加費用がリアルタイムで自動再計算されます。
+                </p>
+              </div>
+
+              <!-- プリセット切り替え -->
+              <div class="flex items-center gap-2">
+                <button 
+                  v-for="p in simulatorPresets" 
+                  :key="p.id"
+                  @click="initSimulatorPreset(p.id)"
+                  :class="selectedSimulatorPresetId === p.id ? 'bg-cyan-500 text-slate-950 font-black shadow-md' : 'bg-slate-800 text-slate-300 hover:text-white'"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                  {{ p.name }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 算出結果サマリーボード（超重要メトリクス） -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-800">
+              <div class="bg-slate-950/90 border border-cyan-500/50 rounded-xl p-4 text-center">
+                <div class="text-xs text-cyan-400 font-bold mb-1">🏁 全体工期（最短総所要日数）</div>
+                <div class="text-3xl font-black text-white font-mono">
+                  {{ simulatorResults.duration }} <span class="text-sm font-normal text-slate-400">日</span>
+                </div>
+              </div>
+              <div class="bg-slate-950/90 border border-amber-500/50 rounded-xl p-4 text-center">
+                <div class="text-xs text-amber-400 font-bold mb-1">💰 工期短縮 総追加費用</div>
+                <div class="text-3xl font-black text-amber-300 font-mono">
+                  {{ simulatorResults.totalAddedCost }} <span class="text-sm font-normal text-slate-400">万円</span>
+                </div>
+              </div>
+              <div class="bg-slate-950/90 border border-rose-500/50 rounded-xl p-4 text-center">
+                <div class="text-xs text-rose-400 font-bold mb-1">🚩 クリティカル作業数</div>
+                <div class="text-3xl font-black text-rose-300 font-mono">
+                  {{ simulatorResults.criticalPathNames.length }} <span class="text-sm font-normal text-slate-400">作業</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- クリティカルパス経路表示 -->
+            <div class="bg-amber-950/30 border border-amber-500/50 rounded-xl p-3 flex items-center gap-2 text-xs">
+              <span class="bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded text-[10px] shrink-0">★ CP</span>
+              <span class="text-slate-300">現在のクリティカル作業:</span>
+              <div class="font-bold text-amber-200 font-mono flex items-center gap-1.5 flex-wrap">
+                <span v-for="(name, nIdx) in simulatorResults.criticalPathNames" :key="nIdx" class="bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded">
+                  {{ name }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 各作業の短縮スライダー・編集カード -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-black text-white flex items-center gap-2">
+                <span>🎛️</span> 作業ごとの工期短縮スライダー（クラッシング操作）
+              </h4>
+              <button 
+                @click="initSimulatorPreset(selectedSimulatorPresetId)"
+                class="text-xs text-slate-400 hover:text-white underline cursor-pointer">
+                短縮日数をリセット
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div 
+                v-for="act in simulatorActivities" 
+                :key="act.id"
+                :class="simulatorResults.activities.find(a => a.id === act.id)?.isCritical ? 'bg-amber-950/20 border-amber-500/60 ring-1 ring-amber-500/30' : 'bg-slate-950/70 border-slate-800'"
+                class="p-4 rounded-xl border space-y-2.5 transition-all">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-cyan-900/60 border border-cyan-500/60 text-cyan-300 font-mono font-black text-xs flex items-center justify-center">
+                      {{ act.id }}
+                    </span>
+                    <span class="font-bold text-sm text-white">{{ act.name }}</span>
+                    <span class="text-xs text-slate-400 font-mono">({{ act.from }} → {{ act.to }})</span>
+                  </div>
+                  <span 
+                    v-if="simulatorResults.activities.find(a => a.id === act.id)?.isCritical"
+                    class="bg-amber-500 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded">
+                    ★ クリティカル
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-900/90 p-2.5 rounded-lg border border-slate-800/80">
+                  <div>標準: <strong class="text-white">{{ act.originalDays }}日</strong></div>
+                  <div>実効: <strong class="text-cyan-300">{{ act.originalDays - (act.shortenDays || 0) }}日</strong></div>
+                  <div>勾配: <strong class="text-amber-300">{{ act.costSlope ? `${act.costSlope}万/日` : '0' }}</strong></div>
+                </div>
+
+                <!-- 短縮スライダー（maxShorten > 0 のみ操作可能） -->
+                <div v-if="act.maxShorten > 0" class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400">短縮日数:</span>
+                    <span class="font-bold font-mono" :class="act.shortenDays > 0 ? 'text-amber-400' : 'text-slate-400'">
+                      −{{ act.shortenDays || 0 }}日 （追加費用: {{ (act.shortenDays || 0) * (act.costSlope || 0) }}万円）
+                    </span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    :max="act.maxShorten" 
+                    v-model.number="act.shortenDays" 
+                    class="w-full accent-cyan-400 cursor-pointer"
+                  />
+                  <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>0日 (標準)</span>
+                    <span>最大短縮 −{{ act.maxShorten }}日</span>
+                  </div>
+                </div>
+                <div v-else class="text-[11px] text-slate-500 italic">
+                  ※この作業は短縮不可（ダミー作業等）
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 全作業のフロート詳細テーブル（EST, EFT, LST, LFT, TF, FF） -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+            <h4 class="text-sm font-black text-white flex items-center gap-2">
+              <span>📊</span> 全作業フロート・結合点時刻の完全計算表
+            </h4>
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-950 text-slate-300 border-b border-slate-800 font-bold">
+                    <th class="p-2.5 text-center">作業</th>
+                    <th class="p-2.5">作業名</th>
+                    <th class="p-2.5 text-center">区間</th>
+                    <th class="p-2.5 text-center">日数</th>
+                    <th class="p-2.5 text-center text-cyan-300">EST(最早開始)</th>
+                    <th class="p-2.5 text-center text-cyan-300">EFT(最早終了)</th>
+                    <th class="p-2.5 text-center text-indigo-300">LST(最遅開始)</th>
+                    <th class="p-2.5 text-center text-indigo-300">LFT(最遅終了)</th>
+                    <th class="p-2.5 text-center text-amber-400 font-bold">TF(全余裕)</th>
+                    <th class="p-2.5 text-center text-emerald-400 font-bold">FF(自由余裕)</th>
+                    <th class="p-2.5 text-center">判定</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 font-mono text-slate-300">
+                  <tr 
+                    v-for="act in simulatorResults.activities" 
+                    :key="act.id"
+                    :class="act.isCritical ? 'bg-amber-950/20 font-bold' : 'hover:bg-slate-800/30'">
+                    <td class="p-2.5 text-center font-bold" :class="act.isCritical ? 'text-amber-400' : 'text-cyan-400'">{{ act.id }}</td>
+                    <td class="p-2.5 font-sans">{{ act.name }}</td>
+                    <td class="p-2.5 text-center">{{ act.from }} → {{ act.to }}</td>
+                    <td class="p-2.5 text-center font-bold text-white">{{ act.currentDays }}日</td>
+                    <td class="p-2.5 text-center text-cyan-300">{{ act.est }}</td>
+                    <td class="p-2.5 text-center text-cyan-300">{{ act.eft }}</td>
+                    <td class="p-2.5 text-center text-indigo-300">{{ act.lst }}</td>
+                    <td class="p-2.5 text-center text-indigo-300">{{ act.lft }}</td>
+                    <td class="p-2.5 text-center font-bold" :class="act.tf === 0 ? 'text-amber-400' : 'text-white'">
+                      {{ act.tf }}
+                    </td>
+                    <td class="p-2.5 text-center font-bold" :class="act.ff === 0 ? 'text-emerald-400' : 'text-white'">
+                      {{ act.ff }}
+                    </td>
+                    <td class="p-2.5 text-center">
+                      <span v-if="act.isCritical" class="bg-amber-500 text-slate-950 text-[10px] font-black px-1.5 py-0.5 rounded">
+                        ★ CP
+                      </span>
+                      <span v-else class="text-slate-500 text-[10px]">
+                        非CP
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUBTAB 3: 📐 基礎公式＆解法完全ガイド -->
+        <!-- ========================================== -->
+        <div v-if="scheduleSubTab === 'theory'" class="space-y-5">
+          <!-- 8つの鉄則ステップカード -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div 
+              v-for="(guide, gIdx) in scheduleTheoryGuide" 
+              :key="gIdx"
+              class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-2 hover:border-cyan-500/40 transition-all">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-cyan-900 text-cyan-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
+                  {{ gIdx + 1 }}
+                </span>
+                <h4 class="text-sm font-black text-white">
+                  {{ guide.step }}
+                </h4>
+              </div>
+              <p class="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed pl-8">
+                {{ guide.content }}
+              </p>
+            </div>
+          </div>
+
+          <!-- 各種工程表の比較表 -->
+          <div v-for="(chart, cIdx) in scheduleComparisonCharts" :key="cIdx" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+            <h4 class="text-sm font-black text-white flex items-center gap-2">
+              <span>📊</span> {{ chart.title }}
+            </h4>
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-950 text-slate-300 border-b border-slate-800 font-bold">
+                    <th v-for="(h, hIdx) in chart.headers" :key="hIdx" class="p-3">
+                      {{ h }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 bg-slate-900/60 text-slate-300">
+                  <tr v-for="(row, rIdx) in chart.rows" :key="rIdx" class="hover:bg-slate-800/40">
+                    <td class="p-3 font-bold text-cyan-300 whitespace-nowrap">{{ row[0] }}</td>
+                    <td class="p-3 leading-relaxed text-emerald-200">{{ row[1] }}</td>
+                    <td class="p-3 leading-relaxed text-rose-200">{{ row[2] }}</td>
+                    <td class="p-3 leading-relaxed text-slate-400">{{ row[3] }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUBTAB 4: 🏛️ 1次・2次 本試験「工程」特選 -->
+        <!-- ========================================== -->
+        <div v-if="scheduleSubTab === 'exam'" class="space-y-5">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-2">
+            <h3 class="text-base font-black text-white flex items-center gap-2">
+              <span>🏛️</span> 1次・2次検定 本試験の「工程管理」厳選出題集
+            </h3>
+            <p class="text-xs text-slate-300">
+              過去問バンクの中から「ネットワーク工程表・バーチャート・クリティカルパス・出来高管理」に該当する問題を抽出しています。
+            </p>
+          </div>
+
+          <div v-if="scheduleExamQuestions.length === 0" class="text-center py-10 text-slate-500 text-xs">
+            読み込み中または該当問題がありません
+          </div>
+
+          <div v-else class="space-y-4">
+            <div 
+              v-for="(q, qIdx) in scheduleExamQuestions" 
+              :key="q.id || qIdx"
+              class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="bg-indigo-900 text-indigo-300 text-[11px] font-bold px-2 py-0.5 rounded">
+                  {{ q.yearLabel || '本試験' }}
+                </span>
+                <span class="bg-slate-800 text-cyan-300 text-[11px] font-mono px-2 py-0.5 rounded">
+                  {{ q.category || '工程管理' }}
+                </span>
+              </div>
+              <h4 class="text-sm font-bold text-white leading-relaxed">
+                〔No. {{ qIdx + 1 }}〕 {{ q.question }}
+              </h4>
+
+              <!-- 4択選択肢 -->
+              <div class="grid grid-cols-1 gap-2 pt-2">
+                <div 
+                  v-for="(opt, optIdx) in q.options" 
+                  :key="optIdx"
+                  class="p-3 rounded-xl border text-xs transition-all flex items-start gap-2.5"
+                  :class="optIdx === q.correctIndex ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-200 font-bold' : 'bg-slate-950/70 border-slate-800/80 text-slate-300'">
+                  <span class="font-mono px-1.5 py-0.2 rounded" :class="optIdx === q.correctIndex ? 'bg-emerald-400 text-slate-950' : 'bg-slate-800 text-slate-400'">
+                    {{ optIdx + 1 }}
+                  </span>
+                  <span class="leading-relaxed">{{ opt }}</span>
+                  <span v-if="optIdx === q.correctIndex" class="ml-auto text-emerald-400 font-black text-xs shrink-0">
+                    正解 ★
+                  </span>
+                </div>
+              </div>
+
+              <!-- 解説 -->
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-xs text-slate-300 space-y-1 mt-2">
+                <div class="font-bold text-cyan-400 flex items-center gap-1">
+                  <span>💡</span> 解説・正誤の急所:
+                </div>
+                <p class="leading-relaxed">{{ q.explanation }}</p>
+                <div v-if="q.trapNote" class="text-amber-300 pt-1 font-medium">
+                  ⚠️ 罠ノート: {{ q.trapNote }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+
       <section v-if="activeTab === 'words'" class="flex-1 flex flex-col gap-3.5 max-w-3xl mx-auto w-full">
         
         <!-- セクタ（工種）切り替えタブ -->
@@ -2961,7 +3562,7 @@
 
   </div>
 
-  <script src="app.js?v=4.0.0"></script>
+  <script src="app.js?v=4.1.0"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -2976,7 +3577,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=4.0.0')
+        navigator.serviceWorker.register('./sw.js?v=4.1.0')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック

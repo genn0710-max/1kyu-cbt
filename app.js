@@ -54,7 +54,7 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
-    const appVersion = ref('Ver.4.0.0');
+    const appVersion = ref('Ver.4.1.0');
 
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
@@ -3576,9 +3576,191 @@ createApp({
       installPrompt.value = null;
     };
 
+    
+    // ==========================================
+    // 📊 工程管理・クリティカルパス特化マスター (Ver.4.1.0 特記新設)
+    // ==========================================
+    const scheduleSubTab = ref('drill'); // 'drill' | 'simulator' | 'theory' | 'exam'
+    const selectedScheduleDrillIndex = ref(0);
+    const revealedScheduleAnswers = ref({}); // { [drillId_qIdx]: boolean }
+
+    const scheduleTheoryGuide = computed(() => secondExamBank.value.networkSchedule?.theoryGuide || []);
+    const scheduleComparisonCharts = computed(() => secondExamBank.value.networkSchedule?.comparisonCharts || []);
+    const scheduleDrills = computed(() => secondExamBank.value.networkSchedule?.drillProblems || []);
+    const currentScheduleDrill = computed(() => {
+      const list = scheduleDrills.value;
+      return list[selectedScheduleDrillIndex.value] || list[0] || {};
+    });
+
+    const isScheduleAnswerRevealed = (drillId, qIdx) => {
+      return !!revealedScheduleAnswers.value[`${drillId}_${qIdx}`];
+    };
+
+    const toggleScheduleAnswer = (drillId, qIdx) => {
+      const k = `${drillId}_${qIdx}`;
+      revealedScheduleAnswers.value[k] = !revealedScheduleAnswers.value[k];
+    };
+
+    const revealAllScheduleDrillAnswers = (drillId) => {
+      const drill = scheduleDrills.value.find(d => d.id === drillId);
+      if (!drill || !drill.questionList) return;
+      drill.questionList.forEach((_, idx) => {
+        revealedScheduleAnswers.value[`${drillId}_${idx}`] = true;
+      });
+    };
+
+    // リアルタイム・ネットワーク計算シミュレーター
+    const simulatorPresets = computed(() => secondExamBank.value.networkSchedule?.simulatorPresets || []);
+    const selectedSimulatorPresetId = ref('preset-standard');
+    const simulatorActivities = ref([]);
+
+    const initSimulatorPreset = (presetId) => {
+      selectedSimulatorPresetId.value = presetId;
+      const presets = simulatorPresets.value;
+      const preset = presets.find(p => p.id === presetId) || presets[0];
+      if (preset && preset.activities) {
+        simulatorActivities.value = preset.activities.map(act => ({
+          ...act,
+          originalDays: act.days,
+          shortenDays: 0
+        }));
+      }
+    };
+
+    // リアルタイム計算エンジン（EST, EFT, LST, LFT, TF, FF, クリティカルパス）
+    const simulatorResults = computed(() => {
+      const acts = simulatorActivities.value;
+      if (!acts || acts.length === 0) {
+        return { nodes: [], activities: [], paths: [], duration: 0, totalAddedCost: 0, criticalPathNames: [] };
+      }
+
+      // 1. 各ノード番号の収集
+      const nodeSet = new Set();
+      acts.forEach(a => {
+        nodeSet.add(a.from);
+        nodeSet.add(a.to);
+      });
+      const sortedNodes = Array.from(nodeSet).sort((a, b) => a - b);
+      if (sortedNodes.length === 0) return { nodes: [], activities: [], paths: [], duration: 0, totalAddedCost: 0, criticalPathNames: [] };
+      const startNode = sortedNodes[0];
+      const endNode = sortedNodes[sortedNodes.length - 1];
+
+      // 実効日数 (days - shortenDays)
+      const currentActs = acts.map(a => {
+        const curDays = Math.max(0, a.days - (a.shortenDays || 0));
+        const addedCost = (a.shortenDays || 0) * (a.costSlope || 0);
+        return { ...a, currentDays: curDays, addedCost };
+      });
+
+      const totalAddedCost = currentActs.reduce((sum, a) => sum + a.addedCost, 0);
+
+      // 2. 前進計算 (Forward Pass): 各ノードの最早結合点時刻 EST
+      const nodeEst = {};
+      sortedNodes.forEach(n => { nodeEst[n] = 0; });
+      sortedNodes.forEach(n => {
+        const incoming = currentActs.filter(a => a.to === n);
+        if (incoming.length > 0) {
+          let maxEft = 0;
+          incoming.forEach(a => {
+            const eft = nodeEst[a.from] + a.currentDays;
+            if (eft > maxEft) maxEft = eft;
+          });
+          nodeEst[n] = maxEft;
+        }
+      });
+
+      const duration = nodeEst[endNode] || 0;
+
+      // 3. 後退計算 (Backward Pass): 各ノードの最遅結合点時刻 LFT
+      const nodeLft = {};
+      sortedNodes.forEach(n => { nodeLft[n] = duration; });
+      const reversedNodes = [...sortedNodes].reverse();
+      reversedNodes.forEach(n => {
+        const outgoing = currentActs.filter(a => a.from === n);
+        if (outgoing.length > 0) {
+          let minLst = duration;
+          outgoing.forEach(a => {
+            const lst = nodeLft[a.to] - a.currentDays;
+            if (lst < minLst) minLst = lst;
+          });
+          nodeLft[n] = minLst;
+        }
+      });
+
+      // 4. 各作業のフロート計算 (EST, EFT, LST, LFT, TF, FF)
+      const evaluatedActs = currentActs.map(a => {
+        const est = nodeEst[a.from];
+        const eft = est + a.currentDays;
+        const lft = nodeLft[a.to];
+        const lst = lft - a.currentDays;
+        const tf = lft - est - a.currentDays;
+        const ff = nodeEst[a.to] - est - a.currentDays;
+        const isCritical = tf === 0;
+        return {
+          ...a,
+          est,
+          eft,
+          lst,
+          lft,
+          tf,
+          ff,
+          isCritical
+        };
+      });
+
+      // 5. 全経路の探索 (DFS)
+      const paths = [];
+      function findPaths(currNode, currentRoute, currentDays) {
+        if (currNode === endNode) {
+          paths.push({
+            route: currentRoute.join(' → '),
+            days: currentDays,
+            isCritical: currentDays === duration
+          });
+          return;
+        }
+        const outActs = evaluatedActs.filter(a => a.from === currNode);
+        outActs.forEach(a => {
+          findPaths(a.to, [...currentRoute, `${a.id}(${a.name})`], currentDays + a.currentDays);
+        });
+      }
+      findPaths(startNode, [`[節点${startNode}]`], 0);
+
+      // クリティカル作業リスト
+      const criticalPathNames = evaluatedActs.filter(a => a.isCritical).map(a => `${a.id}:${a.name}`);
+
+      // ノード表
+      const nodes = sortedNodes.map(n => ({
+        node: n,
+        est: nodeEst[n],
+        lft: nodeLft[n],
+        isCriticalNode: nodeEst[n] === nodeLft[n]
+      }));
+
+      return {
+        nodes,
+        activities: evaluatedActs,
+        paths,
+        duration,
+        totalAddedCost,
+        criticalPathNames
+      };
+    });
+
+    // 1次試験本試験の「工程管理」関連問題抽出
+    const scheduleExamQuestions = computed(() => {
+      const pool = allQuestions.value || [];
+      return pool.filter(q => {
+        const str = `${q.chapterName || ''} ${q.category || ''} ${q.question || ''}`;
+        return str.includes('工程') || str.includes('クリティカルパス') || str.includes('ネットワーク') || str.includes('バーチャート') || str.includes('フロート') || str.includes('出来高');
+      });
+    });
+
+
     onMounted(async () => {
       maskUrlAndHistory();
-      try {
+            initSimulatorPreset('preset-standard');
+try {
         const cached = await getAllFromDB();
         // キャッシュに年度情報(year, yearLabel)が存在し、かつ最新件数と一致しているか厳格判定
         const isCacheValid = cached && cached.length > 0 && 
@@ -3605,6 +3787,23 @@ createApp({
     });
 
     return {
+      // 📊 工程管理・クリティカルパス特化 (Ver.4.1.0)
+      scheduleSubTab,
+      selectedScheduleDrillIndex,
+      revealedScheduleAnswers,
+      scheduleTheoryGuide,
+      scheduleComparisonCharts,
+      scheduleDrills,
+      currentScheduleDrill,
+      isScheduleAnswerRevealed,
+      toggleScheduleAnswer,
+      revealAllScheduleDrillAnswers,
+      simulatorPresets,
+      selectedSimulatorPresetId,
+      simulatorActivities,
+      initSimulatorPreset,
+      simulatorResults,
+      scheduleExamQuestions,
       chapters,
       activeTab,
       switchTab,

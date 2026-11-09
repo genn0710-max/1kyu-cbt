@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbt-arch-v4.0.0-second-exam';
+const CACHE_NAME = 'cbt-arch-v4.1.0-critical-path';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
