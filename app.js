@@ -1,6 +1,6 @@
 const { createApp, ref, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
 
-const DB_NAME = 'ArchConstructionCBT_DB_v4';
+const DB_NAME = 'ArchConstructionCBT_DB_v5';
 const DB_VERSION = 1;
 const STORE_NAME = 'questions';
 
@@ -1977,9 +1977,14 @@ createApp({
       return target ? target.name : `${year}年度`;
     };
 
+    const examTabMode = ref('past'); // 'past' (年度別過去問) | 'mock' (スキマ時間模試)
+
     const getExamModeTitle = () => {
       if (selectedExamMode.value === 'speed10') return '⚡ タイムリー10分版（15問）';
       if (selectedExamMode.value === 'intensive20') return '🧠 濃縮20分版 [即時解説＆現場知見付き]（25問）';
+      if (selectedExamMode.value === 'past_all') {
+        return `🏛️ 第一次検定 本試験過去問全問 総合演習（全${examQuestions.value.length}問）`;
+      }
       if (selectedExamMode.value && selectedExamMode.value.startsWith('past_')) {
         const y = selectedExamMode.value.replace('past_', '');
         return `🏛️ ${getPastExamYearName(y)} 過去問本試験演習（全${examQuestions.value.length}問）`;
@@ -1988,8 +1993,16 @@ createApp({
     };
 
     const startPastExam = (year) => {
+      let pool = allQuestions.value;
+      if (!pool || pool.length === 0 || !pool[0]?.year) {
+        if (window.QUESTIONS_BANK && window.QUESTIONS_BANK.length > 0) {
+          allQuestions.value = window.QUESTIONS_BANK;
+          pool = window.QUESTIONS_BANK;
+          saveAllToDB(window.QUESTIONS_BANK).catch(() => {});
+        }
+      }
       const targetYear = Number(year);
-      const qs = allQuestions.value.filter(q => q.year === targetYear);
+      const qs = pool.filter(q => q.year === targetYear);
       if (qs.length === 0) {
         showSpeechToast('⚠️ 選択した年度の問題がありません', 'warn');
         return;
@@ -2016,6 +2029,37 @@ createApp({
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
       showSpeechToast(`🏛️ ${getPastExamYearName(targetYear)} 過去問演習開始（全${qs.length}問）`, 'info', 3000);
+    };
+
+    const startAllPastExams = () => {
+      let pool = allQuestions.value;
+      if (!pool || pool.length === 0 || !pool[0]?.year) {
+        pool = window.QUESTIONS_BANK || [];
+        allQuestions.value = pool;
+        saveAllToDB(window.QUESTIONS_BANK).catch(() => {});
+      }
+      selectedExamMode.value = 'past_all';
+      examQuestions.value = [...pool];
+      for (let i = 0; i < pool.length; i++) {
+        examUserAnswers.value[i] = null;
+        examMarks.value[i] = false;
+      }
+      currentExamIndex.value = 0;
+      examTimeRemaining.value = pool.length * 60; // 1問1分換算
+      isExamStarted.value = true;
+      isExamFinished.value = false;
+
+      clearInterval(examTimerInterval);
+      examTimerInterval = setInterval(() => {
+        if (examTimeRemaining.value > 0) {
+          examTimeRemaining.value--;
+        } else {
+          finishExam();
+        }
+      }, 1000);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showSpeechToast(`🏛️ 過去問全80問 総合本試験演習開始（全${pool.length}問）`, 'info', 3000);
     };
 
     const startSpecificExam = (mode) => {
@@ -2471,7 +2515,9 @@ createApp({
 
     // 同一設定での最初からのフル再試験
     const restartCurrentExam = () => {
-      if (selectedExamMode.value && selectedExamMode.value.startsWith('past_')) {
+      if (selectedExamMode.value === 'past_all') {
+        startAllPastExams();
+      } else if (selectedExamMode.value && selectedExamMode.value.startsWith('past_')) {
         const y = selectedExamMode.value.replace('past_', '');
         startPastExam(y);
       } else {
@@ -3346,6 +3392,31 @@ createApp({
       });
     };
 
+    // 6. 第二次検定（実地試験）年度別本試験過去問
+    const secondPastExams = computed(() => secondExamBank.value.pastExams || []);
+    const selectedSecondPastYear = ref(2024);
+    const selectedSecondPastExam = computed(() => {
+      const list = secondPastExams.value;
+      return list.find(e => e.year === Number(selectedSecondPastYear.value)) || list[0] || {};
+    });
+    const revealedSecondPastAnswers = ref({});
+    const toggleSecondPastAnswer = (key) => {
+      revealedSecondPastAnswers.value[key] = !revealedSecondPastAnswers.value[key];
+    };
+    const narrateSecondPastQuestion = (q, yearLabel) => {
+      if (isSpeaking.value && activeSpeechCardId.value === `${yearLabel}_${q.no}`) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      activeSpeechCardId.value = `${yearLabel}_${q.no}`;
+      currentSpeechItemTitle.value = `${yearLabel} ${q.no}【${q.theme}】`;
+      const text = `${yearLabel}、${q.no}、${q.type}。テーマ、${q.theme}。問題。${q.question}。模範解答。${q.modelAnswer}。`;
+      speakText(text, () => {
+        activeSpeechCardId.value = null;
+      });
+    };
+
     // ==========================================
     // 初期化ロード
     // ==========================================
@@ -3509,9 +3580,12 @@ createApp({
       maskUrlAndHistory();
       try {
         const cached = await getAllFromDB();
-        // キャッシュが存在し、かつ最新の問題バンク件数と一致していればキャッシュを使用。
-        // 件数が異なる場合やキャッシュが空の場合は最新バンクでIndexedDBを更新・初期化。
-        if (cached && cached.length > 0 && window.QUESTIONS_BANK && cached.length === window.QUESTIONS_BANK.length) {
+        // キャッシュに年度情報(year, yearLabel)が存在し、かつ最新件数と一致しているか厳格判定
+        const isCacheValid = cached && cached.length > 0 && 
+                             window.QUESTIONS_BANK && 
+                             cached.length === window.QUESTIONS_BANK.length &&
+                             cached.every(q => q.year && q.yearLabel);
+        if (isCacheValid) {
           allQuestions.value = cached;
         } else if (window.QUESTIONS_BANK && window.QUESTIONS_BANK.length > 0) {
           allQuestions.value = window.QUESTIONS_BANK;
@@ -3646,6 +3720,8 @@ createApp({
       pastExamYears,
       getPastExamYearName,
       startPastExam,
+      startAllPastExams,
+      examTabMode,
 
       // 🏆 第二次検定（実地試験）合格完全攻略
       secondExamBank,
@@ -3684,6 +3760,12 @@ createApp({
       isSecondAudioAutoCycle,
       playSecondAudioItem,
       toggleSecondAudioCycle,
+      secondPastExams,
+      selectedSecondPastYear,
+      selectedSecondPastExam,
+      revealedSecondPastAnswers,
+      toggleSecondPastAnswer,
+      narrateSecondPastQuestion,
 
       // Quiz
       quizFilterChapter,
