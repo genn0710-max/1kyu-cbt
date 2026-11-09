@@ -54,7 +54,7 @@ createApp({
       { id: 'ch6', name: '第6章 法規（建築基準法・建設業法・労基法）' }
     ];
 
-    const appVersion = ref('Ver.3.4.0');
+    const appVersion = ref('Ver.4.0.0');
 
     // ==========================================
     // 🔒 セキュリティ・限定試用認証 ＆ 拡散追跡防止
@@ -866,6 +866,37 @@ createApp({
       s = s.replace(/本試験/g, "ほんしけん ");
       s = s.replace(/過去問/g, "かこもん ");
       s = s.replace(/第一次検定|第1次検定/g, "だいいちじ けんてい ");
+      s = s.replace(/第二次検定|第2次検定/g, "だいにじ けんてい ");
+      s = s.replace(/実地試験/g, "じっち しけん ");
+      s = s.replace(/施工経験記述/g, "せこう けいけん きじゅつ ");
+      s = s.replace(/経験記述/g, "けいけん きじゅつ ");
+      s = s.replace(/トータルフロート/g, "トータルフロート ");
+      s = s.replace(/フリーフロート/g, "フリーフロート ");
+      s = s.replace(/クリティカルパス/g, "クリティカルパス ");
+      s = s.replace(/費用勾配/g, "ひよう こうばい ");
+      s = s.replace(/前進計算/g, "ぜんしん けいさん ");
+      s = s.replace(/後退計算/g, "こうたい けいさん ");
+      s = s.replace(/安全衛生協議組織/g, "あんぜん えいせい きょうぎ そしき ");
+      s = s.replace(/安全衛生協議会/g, "あんぜん えいせい きょうぎかい ");
+      s = s.replace(/専任要件/g, "せんにん ようけん ");
+      s = s.replace(/特定建設業/g, "とくてい けんせつぎょう ");
+      s = s.replace(/一般建設業/g, "いっぱん けんせつぎょう ");
+      s = s.replace(/コールドジョイント/g, "コールドジョイント ");
+      s = s.replace(/レイタンス/g, "レイタンス ");
+      s = s.replace(/ブリーディング/g, "ブリーディング ");
+      s = s.replace(/ワーキングジョイント/g, "ワーキングジョイント ");
+      s = s.replace(/ボンドブレーカー/g, "ボンドブレーカー ");
+      s = s.replace(/バックアップ材/g, "バックアップざい ");
+      s = s.replace(/フィラープレート/g, "フィラープレート ");
+      s = s.replace(/すり合わせ加工/g, "すりあわせ かこう ");
+      s = s.replace(/肌隙/g, "はだすき ");
+      s = s.replace(/ピンテール/g, "ピンテール ");
+      s = s.replace(/手すり先行工法/g, "てすり せんこう こうほう ");
+      s = s.replace(/墜落制止用器具/g, "ついらく せいしよう きぐ ");
+      s = s.replace(/プレキャスト/g, "プレキャスト ");
+      s = s.replace(/PCa化/g, "ピーシーエーか ");
+      s = s.replace(/PCa工法/g, "ピーシーエーこうほう ");
+      s = s.replace(/PCa/g, "ピーシーエー ");
       s = s.replace(/出題/g, "しゅつだい ");
 
       // 【設問特有・正誤判定キーワード】
@@ -3052,6 +3083,270 @@ createApp({
     };
 
     // ==========================================
+    // 🏆 第二次検定（実地試験）合格完全攻略ナビ
+    // ==========================================
+    const secondExamBank = ref(window.SECOND_EXAM_BANK || {});
+    const secondExamSubTab = ref('essay'); // 'essay' | 'construction' | 'network' | 'regulations' | 'audio'
+
+    // 1. 施工経験記述
+    const selectedEssayTheme = ref('ALL');
+    const selectedModelEssayId = ref('essay-qc-01');
+
+    const filteredModelEssays = computed(() => {
+      const list = secondExamBank.value.experienceEssay?.modelEssays || [];
+      if (selectedEssayTheme.value === 'ALL') return list;
+      return list.filter(e => e.theme.includes(selectedEssayTheme.value));
+    });
+
+    const selectedModelEssay = computed(() => {
+      const list = secondExamBank.value.experienceEssay?.modelEssays || [];
+      return list.find(e => e.id === selectedModelEssayId.value) || list[0] || {};
+    });
+
+    const defaultDraft = {
+      projectName: '',
+      clientName: '',
+      location: '',
+      structure: '',
+      period: '',
+      role: '',
+      theme: '品質管理',
+      problemReason: '',
+      solutionMeasures: ''
+    };
+
+    const loadSavedDraft = () => {
+      try {
+        const raw = localStorage.getItem('cbt_user_essay_draft');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return { ...defaultDraft };
+    };
+
+    const userEssayDraft = ref(loadSavedDraft());
+    const essaySaveNotice = ref('');
+
+    const saveUserEssayDraft = () => {
+      try {
+        localStorage.setItem('cbt_user_essay_draft', JSON.stringify(userEssayDraft.value));
+        essaySaveNotice.value = '✅ 下書きを保存しました';
+        setTimeout(() => { essaySaveNotice.value = ''; }, 3000);
+      } catch (e) {}
+    };
+
+    const clearUserEssayDraft = () => {
+      if (!confirm('下書きの内容をすべてクリアしますか？')) return;
+      userEssayDraft.value = { ...defaultDraft };
+      saveUserEssayDraft();
+    };
+
+    const loadModelEssayIntoDraft = (essay) => {
+      if (!confirm(`模範解答「${essay.topicName}」の内容を下書きエディタに反映しますか？（現在の入力内容は上書きされます）`)) return;
+      userEssayDraft.value = {
+        projectName: essay.projectSample.name,
+        clientName: essay.projectSample.client,
+        location: essay.projectSample.location,
+        structure: essay.projectSample.structure,
+        period: essay.projectSample.period,
+        role: essay.projectSample.role,
+        theme: essay.theme,
+        problemReason: essay.problemReason,
+        solutionMeasures: essay.solutionMeasures
+      };
+      saveUserEssayDraft();
+      showSpeechToast('📝 模範解答を下書きに読み込みました。自分の現場に合わせて編集してください！', 'info');
+    };
+
+    const copyUserEssayDraft = () => {
+      const d = userEssayDraft.value;
+      const text = `【1級建築施工管理技士 第二次検定 施工経験記述】\n` +
+        `■ 工事名: ${d.projectName || '未記入'}\n` +
+        `■ 発注者名: ${d.clientName || '未記入'}\n` +
+        `■ 工事場所: ${d.location || '未記入'}\n` +
+        `■ 構造・規模: ${d.structure || '未記入'}\n` +
+        `■ 工期: ${d.period || '未記入'}\n` +
+        `■ あなたの立場: ${d.role || '未記入'}\n` +
+        `■ テーマ: ${d.theme}\n\n` +
+        `〔設問1〕重点管理項目と留意した理由:\n${d.problemReason || '未記入'}\n\n` +
+        `〔設問2〕現場で実施した具体的措置:\n${d.solutionMeasures || '未記入'}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showSpeechToast('📋 経験記述の全文をクリップボードにコピーしました！', 'info');
+        }).catch(() => {
+          alert('クリップボードへのコピーに失敗しました。手動でコピーしてください。');
+        });
+      } else {
+        alert('お使いの環境ではクリップボード自動コピーに対応していません。テキストを手動選択してコピーしてください。');
+      }
+    };
+
+    const narrateModelEssay = (essay) => {
+      if (isSpeaking.value && activeSpeechCardId.value === essay.id) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      activeSpeechCardId.value = essay.id;
+      currentSpeechItemTitle.value = `経験記述模範【${essay.theme}】${essay.topicName}`;
+      const text = `施工経験記述、合格模範文例。テーマ、${essay.theme}。課題、${essay.topicName}。設問1、重点管理項目と留意した理由。${essay.problemReason}。設問2、現場で実施した具体的措置。${essay.solutionMeasures}。`;
+      speakText(text, () => {
+        activeSpeechCardId.value = null;
+      });
+    };
+
+    // 採点官チェック（定量的数値・NG抽象表現・文字数）
+    const essayQuantitativeCheck = computed(() => {
+      const full = (userEssayDraft.value.problemReason + ' ' + userEssayDraft.value.solutionMeasures);
+      const units = full.match(/\d+(\.\d+)?\s*(mm|cm|m|%|kg|日|度|℃|N|kN|t|m²|m³|m2|m3|時間)/gi) || [];
+      return {
+        count: units.length,
+        isGood: units.length >= 3,
+        matches: Array.from(new Set(units)).slice(0, 8)
+      };
+    });
+
+    const essayVagueCheck = computed(() => {
+      const full = (userEssayDraft.value.problemReason + ' ' + userEssayDraft.value.solutionMeasures);
+      const vagueWords = ['注意深く', '念入りに', 'しっかり', '十分に', '気を付け', '適切に', '厳重に', '徹底的に'];
+      const found = vagueWords.filter(w => full.includes(w));
+      return {
+        hasVague: found.length > 0,
+        words: found
+      };
+    });
+
+    // 2. 躯体・仕上 施工管理記述
+    const cdCategoryFilter = ref('ALL');
+    const revealedCdAnswers = ref({});
+    const filteredCdList = computed(() => {
+      const list = secondExamBank.value.constructionDetails || [];
+      if (cdCategoryFilter.value === 'ALL') return list;
+      return list.filter(item => item.category === cdCategoryFilter.value);
+    });
+
+    const toggleCdAnswer = (id) => {
+      revealedCdAnswers.value[id] = !revealedCdAnswers.value[id];
+    };
+
+    const narrateCdItem = (item) => {
+      if (isSpeaking.value && activeSpeechCardId.value === item.id) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      activeSpeechCardId.value = item.id;
+      currentSpeechItemTitle.value = `記述特訓【${item.subCategory}】${item.topic}`;
+      const text = `記述問題。${item.category}、${item.subCategory}、${item.topic}。問題。${item.question}。模範解答。${item.modelAnswer}。採点急所。${item.keyCriteria}。`;
+      speakText(text, () => {
+        activeSpeechCardId.value = null;
+      });
+    };
+
+    // 3. ネットワーク工程表
+    const selectedNetworkDrillIndex = ref(0);
+    const currentNetworkDrill = computed(() => {
+      const drills = secondExamBank.value.networkSchedule?.drillProblems || [];
+      return drills[selectedNetworkDrillIndex.value] || drills[0] || {};
+    });
+    const revealedNetworkAnswers = ref({});
+
+    const toggleNetworkAnswer = (index) => {
+      revealedNetworkAnswers.value[index] = !revealedNetworkAnswers.value[index];
+    };
+
+    // 4. 法規 穴埋め記述
+    const selectedLawCategory = ref('ALL');
+    const revealedLawBlanks = ref({}); // { [cardId_blankNo]: boolean }
+    const filteredLawList = computed(() => {
+      const list = secondExamBank.value.regulationsShort || [];
+      if (selectedLawCategory.value === 'ALL') return list;
+      return list.filter(item => item.category === selectedLawCategory.value);
+    });
+
+    const isLawBlankRevealed = (cardId, blankNo) => {
+      return !!revealedLawBlanks.value[`${cardId}_${blankNo}`];
+    };
+
+    const toggleLawBlank = (cardId, blankNo) => {
+      const key = `${cardId}_${blankNo}`;
+      revealedLawBlanks.value[key] = !revealedLawBlanks.value[key];
+    };
+
+    const revealAllLawBlanks = (cardId) => {
+      const card = filteredLawList.value.find(c => c.id === cardId);
+      if (!card) return;
+      card.blanks.forEach(b => {
+        revealedLawBlanks.value[`${cardId}_${b.no}`] = true;
+      });
+    };
+
+    const narrateLawCard = (card) => {
+      if (isSpeaking.value && activeSpeechCardId.value === card.id) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      activeSpeechCardId.value = card.id;
+      currentSpeechItemTitle.value = `法規記述【${card.category}】${card.title}`;
+      const spokenCard = card.blankCardText.replace(/【.+?】/g, (m) => m.replace(/【[①-⑤]\s*/, '').replace(/】/, ''));
+      const speech = `法規記述問題。${card.category}。${card.title}。条文内容。${spokenCard}。試験の急所。${card.examPoint}。`;
+      speakText(speech, () => {
+        activeSpeechCardId.value = null;
+      });
+    };
+
+    // 5. 2次試験 耳学音声
+    const secondAudioList = computed(() => secondExamBank.value.audioListeningList || []);
+    const currentSecondAudioIndex = ref(0);
+    const isSecondAudioAutoCycle = ref(false);
+
+    const playSecondAudioItem = (item, onEnd) => {
+      stopSpeech();
+      activeSpeechCardId.value = item.id;
+      currentSpeechItemTitle.value = `2次試験耳学【${item.category}】${item.title}`;
+      speakText(`${item.title}。${item.text}`, () => {
+        activeSpeechCardId.value = null;
+        if (onEnd) onEnd();
+      });
+    };
+
+    const toggleSecondAudioCycle = () => {
+      if (isSecondAudioAutoCycle.value) {
+        stopSpeech();
+        isSecondAudioAutoCycle.value = false;
+        return;
+      }
+      isSecondAudioAutoCycle.value = true;
+      currentSecondAudioIndex.value = 0;
+      playSecondAudioCycle();
+    };
+
+    const playSecondAudioCycle = () => {
+      const list = secondAudioList.value;
+      if (!isSecondAudioAutoCycle.value || list.length === 0 || currentSecondAudioIndex.value >= list.length) {
+        isSecondAudioAutoCycle.value = false;
+        activeSpeechCardId.value = null;
+        speakText('2次試験の全聞き流しが完了しました。記述合格に向けて繰り返し復習しましょう。');
+        return;
+      }
+      const item = list[currentSecondAudioIndex.value];
+      playSecondAudioItem(item, () => {
+        if (!isSecondAudioAutoCycle.value) return;
+        setTimeout(() => {
+          if (!isSecondAudioAutoCycle.value) return;
+          currentSecondAudioIndex.value++;
+          if (currentSecondAudioIndex.value < list.length) {
+            playSecondAudioCycle();
+          } else {
+            isSecondAudioAutoCycle.value = false;
+            activeSpeechCardId.value = null;
+            speakText('2次試験の全聞き流しが完了しました。');
+          }
+        }, 1500);
+      });
+    };
+
+    // ==========================================
     // 初期化ロード
     // ==========================================
     const switchTab = (tab) => {
@@ -3351,6 +3646,44 @@ createApp({
       pastExamYears,
       getPastExamYearName,
       startPastExam,
+
+      // 🏆 第二次検定（実地試験）合格完全攻略
+      secondExamBank,
+      secondExamSubTab,
+      selectedEssayTheme,
+      selectedModelEssayId,
+      filteredModelEssays,
+      selectedModelEssay,
+      userEssayDraft,
+      essaySaveNotice,
+      saveUserEssayDraft,
+      clearUserEssayDraft,
+      loadModelEssayIntoDraft,
+      copyUserEssayDraft,
+      narrateModelEssay,
+      essayQuantitativeCheck,
+      essayVagueCheck,
+      cdCategoryFilter,
+      revealedCdAnswers,
+      filteredCdList,
+      toggleCdAnswer,
+      narrateCdItem,
+      selectedNetworkDrillIndex,
+      currentNetworkDrill,
+      revealedNetworkAnswers,
+      toggleNetworkAnswer,
+      selectedLawCategory,
+      revealedLawBlanks,
+      filteredLawList,
+      isLawBlankRevealed,
+      toggleLawBlank,
+      revealAllLawBlanks,
+      narrateLawCard,
+      secondAudioList,
+      currentSecondAudioIndex,
+      isSecondAudioAutoCycle,
+      playSecondAudioItem,
+      toggleSecondAudioCycle,
 
       // Quiz
       quizFilterChapter,

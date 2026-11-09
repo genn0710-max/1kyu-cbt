@@ -1,10 +1,11 @@
-const CACHE_NAME = 'cbt-arch-v3.4.0-past-exams-audio';
+const CACHE_NAME = 'cbt-arch-v4.0.0-second-exam';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './app.js',
   './questions_bank.js',
   './word_bank.js',
+  './second_exam_bank.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

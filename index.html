@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>1級建築施工管理技士補 Ver.3.4.0</title>
+  <title>1級建築施工管理技士 1次・2次検定 合格ナビ Ver.4.0.0</title>
   <!-- 検索エンジン・アーカイブ・外部追跡の完全遮断 (限定試用・流出防止) -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,9 +13,11 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- 600問問題バンク -->
-  <script src="questions_bank.js?v=3.4.0"></script>
+  <script src="questions_bank.js?v=4.0.0"></script>
   <!-- 即解ワード暗記バンク -->
-  <script src="word_bank.js?v=3.4.0"></script>
+  <script src="word_bank.js?v=4.0.0"></script>
+  <!-- 2次試験（実地・記述）マスターバンク -->
+  <script src="second_exam_bank.js?v=4.0.0"></script>
   <!-- モバイル & PWA (iOS / Android) メタタグ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -244,7 +246,7 @@
               <span>ロック</span>
             </button>
           </div>
-          <p class="text-xs text-slate-400 mt-1">10分スキマ実戦 × 20分濃縮解説（現場知見付） × 72文本番模試 × 工種別演習</p>
+          <p class="text-xs text-slate-400 mt-1">1次 CBT本番模試 × 2次 施工経験記述・躯体仕上記述・ネットワーク工程表・法規 × 暗記耳学</p>
         </div>
       
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
@@ -262,7 +264,13 @@
             @click="switchTab('exam')"
             :class="activeTab === 'exam' ? 'bg-indigo-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
             class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0">
-            <span>🎯</span> 実戦テスト・模試
+            <span>🎯</span> 1次 CBT模試
+          </button>
+          <button 
+            @click="switchTab('second')"
+            :class="activeTab === 'second' ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-slate-950 font-extrabold shadow-lg shadow-amber-500/25' : 'text-amber-400 hover:text-amber-200 font-bold border border-amber-500/30'"
+            class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shrink-0">
+            <span>🏆</span> 2次試験 合格ナビ
           </button>
           <button 
             @click="switchTab('words')"
@@ -887,6 +895,628 @@
             </div>
           </div>
 
+        </div>
+
+      </section>
+
+
+      <!-- ============================================== -->
+      <!-- TAB 2: 🏆 第二次検定（実地試験）合格完全攻略ナビ -->
+      <!-- ============================================== -->
+      <section v-if="activeTab === 'second'" class="flex-1 flex flex-col gap-5 max-w-5xl mx-auto w-full pb-8">
+
+        <!-- 2次試験 ヘッダーバナー -->
+        <div class="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/40 rounded-2xl p-4 md:p-6 shadow-xl relative overflow-hidden">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <span class="text-xs font-bold bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full shadow">第二次検定・実地試験</span>
+                <span class="text-xs bg-slate-800 text-amber-300 border border-amber-600/50 px-2.5 py-0.5 rounded-full font-mono">記述式3時間（180分）合格突破対策</span>
+              </div>
+              <h2 class="text-lg md:text-2xl font-extrabold text-white flex items-center gap-2 flex-wrap">
+                <span>🏆 1級建築施工管理技士 第二次検定 合格完全攻略ナビ</span>
+              </h2>
+              <p class="text-xs md:text-sm text-slate-300 mt-1">
+                足切りの壁「施工経験記述」の定量的文例・自動添削 × 躯体・仕上記述 × ネットワーク工程表計算 × 法規穴埋め × 記述耳学
+              </p>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button 
+                v-if="isSpeechSupported"
+                @click="toggleSecondAudioCycle"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 shrink-0"
+                :class="isSecondAudioAutoCycle ? 'bg-rose-600 text-white border border-rose-400 animate-pulse' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:brightness-110'">
+                <span>{{ isSecondAudioAutoCycle ? '⏹ 耳学停止' : '🎧 2次試験 全文聞き流し' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- サブナビゲーション（5つの特訓モード） -->
+          <div class="flex items-center gap-1.5 mt-5 overflow-x-auto pb-1 text-xs whitespace-nowrap">
+            <button 
+              @click="secondExamSubTab = 'essay'"
+              :class="secondExamSubTab === 'essay' ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+              <span>📝</span> 問題1: 施工経験記述 攻略＆添削
+            </button>
+            <button 
+              @click="secondExamSubTab = 'construction'"
+              :class="secondExamSubTab === 'construction' ? 'bg-sky-500 text-slate-950 font-bold border-sky-400 shadow-md shadow-sky-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+              <span>🏗️</span> 問題2: 躯体・仕上 施工記述特訓
+            </button>
+            <button 
+              @click="secondExamSubTab = 'network'"
+              :class="secondExamSubTab === 'network' ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-md shadow-emerald-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+              <span>📊</span> 問題3: ネットワーク工程表 解法
+            </button>
+            <button 
+              @click="secondExamSubTab = 'regulations'"
+              :class="secondExamSubTab === 'regulations' ? 'bg-indigo-500 text-white font-bold border-indigo-400 shadow-md shadow-indigo-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+              <span>⚖️</span> 問題4: 法規 穴埋め・短文記述
+            </button>
+            <button 
+              @click="secondExamSubTab = 'audio'"
+              :class="secondExamSubTab === 'audio' ? 'bg-rose-500 text-white font-bold border-rose-400 shadow-md shadow-rose-500/20' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-2 rounded-xl border transition-all flex items-center gap-1.5">
+              <span>🎧</span> 2次試験 暗記耳学
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SUB-TAB 1: 📝 施工経験記述 完全攻略＆添削 -->
+        <!-- ============================================== -->
+        <div v-if="secondExamSubTab === 'essay'" class="space-y-6">
+          
+          <!-- 合否を分ける鉄則 ＆ 採点基準カード -->
+          <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-4 md:p-5 shadow">
+            <h3 class="text-sm md:text-base font-bold text-amber-300 flex items-center gap-2 mb-3">
+              <span>⚖️</span> 施工経験記述の合否鉄則（足切り回避と満点獲得の極意）
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div v-for="(rule, idx) in secondExamBank.experienceEssay?.overviewGuide?.rules" :key="idx"
+                   class="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                <strong class="text-amber-400 block mb-1 text-xs">{{ rule.title }}</strong>
+                <p class="text-slate-300 leading-relaxed text-[11px]">{{ rule.desc }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 採点官の目線（減点されるNG記述 vs 合格する定量的記述） -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow">
+            <h3 class="text-sm md:text-base font-bold text-white flex items-center gap-2 mb-3">
+              <span>👀</span> 採点官の視点！減点されるNG記述 vs 合格する定量的記述
+            </h3>
+            <div class="space-y-3">
+              <div v-for="(item, idx) in secondExamBank.experienceEssay?.ngVsGoodList" :key="idx"
+                   class="bg-slate-950 rounded-xl p-3.5 border border-slate-800 text-xs">
+                <div class="font-bold text-slate-200 mb-2 flex items-center gap-2">
+                  <span class="bg-slate-800 text-amber-400 px-2 py-0.5 rounded text-[10px]">テーマ</span>
+                  <span>{{ item.topic }}</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="bg-rose-950/30 border border-rose-900/60 rounded-lg p-2.5">
+                    <span class="text-rose-400 font-bold flex items-center gap-1 text-[11px] mb-1">
+                      <span>❌</span> 減点されるNG記述（抽象的・主観的）
+                    </span>
+                    <p class="text-slate-300 text-[11px] leading-relaxed mb-1.5">{{ item.ng }}</p>
+                    <span class="text-[10px] text-rose-300/80 block border-t border-rose-900/40 pt-1">⚠️ 理由: {{ item.ngReason }}</span>
+                  </div>
+                  <div class="bg-emerald-950/30 border border-emerald-800/60 rounded-lg p-2.5">
+                    <span class="text-emerald-400 font-bold flex items-center gap-1 text-[11px] mb-1">
+                      <span>⭕</span> 合格する定量的記述（数値・工法明記）
+                    </span>
+                    <p class="text-slate-200 text-[11px] leading-relaxed mb-1.5">{{ item.good }}</p>
+                    <span class="text-[10px] text-emerald-300/80 block border-t border-emerald-900/40 pt-1">💡 合格理由: {{ item.goodReason }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 合格模範文例集（3大テーマ別） -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 shadow">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-sm md:text-base font-bold text-white flex items-center gap-2">
+                  <span>📚</span> 3大頻出テーマ別 合格模範文例集
+                </h3>
+                <p class="text-xs text-slate-400">本番でそのまま使える標準仕様書（JASS）準拠の満点記述例</p>
+              </div>
+              <div class="flex items-center gap-1 text-xs">
+                <button 
+                  v-for="th in ['ALL', '品質管理', '安全管理', '施工合理化']" 
+                  :key="th"
+                  @click="selectedEssayTheme = th"
+                  :class="selectedEssayTheme === th ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
+                  class="px-2.5 py-1 rounded-lg transition-all text-xs">
+                  {{ th }}
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-for="essay in filteredModelEssays" :key="essay.id"
+                   class="bg-slate-950 border border-slate-800 hover:border-amber-500/50 rounded-xl p-4 flex flex-col justify-between transition-all shadow">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="text-[11px] px-2 py-0.5 rounded font-bold"
+                          :class="essay.theme === '品質管理' ? 'bg-sky-950 text-sky-300 border border-sky-800' : essay.theme === '安全管理' ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'">
+                      {{ essay.theme }}
+                    </span>
+                    <button 
+                      v-if="isSpeechSupported"
+                      @click="narrateModelEssay(essay)"
+                      class="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 font-bold">
+                      <span>{{ activeSpeechCardId === essay.id && isSpeaking ? '⏹ 停止' : '🔊 音声で聴く' }}</span>
+                    </button>
+                  </div>
+                  <h4 class="text-xs font-bold text-white mb-2 leading-snug">{{ essay.topicName }}</h4>
+
+                  <!-- 工事概要抜粋 -->
+                  <div class="bg-slate-900/80 p-2 rounded-lg text-[11px] text-slate-400 space-y-0.5 mb-3 border border-slate-800">
+                    <div><span class="text-slate-500">工事名:</span> {{ essay.projectSample.name }}</div>
+                    <div><span class="text-slate-500">構造・規模:</span> {{ essay.projectSample.structure }}</div>
+                    <div><span class="text-slate-500">立場:</span> {{ essay.projectSample.role }}</div>
+                  </div>
+
+                  <!-- 設問1 -->
+                  <div class="mb-2.5">
+                    <span class="text-[10px] font-bold text-amber-400 block mb-0.5">〔設問1〕重点管理項目と留意した理由</span>
+                    <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/50 p-2 rounded border border-slate-800/80">{{ essay.problemReason }}</p>
+                  </div>
+
+                  <!-- 設問2 -->
+                  <div class="mb-3">
+                    <span class="text-[10px] font-bold text-emerald-400 block mb-0.5">〔設問2〕現場で実施した具体的措置</span>
+                    <p class="text-[11px] text-slate-300 leading-relaxed whitespace-pre-line bg-slate-900/50 p-2 rounded border border-slate-800/80">{{ essay.solutionMeasures }}</p>
+                  </div>
+                </div>
+
+                <button 
+                  @click="loadModelEssayIntoDraft(essay)"
+                  class="w-full bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/40 font-bold py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1">
+                  <span>📝</span> この文例を下書きエディタに反映
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✍️ My施工経験記述 作成・リアルタイム添削エディタ -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl relative">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-800">
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <span>✍️</span> My施工経験記述 作成・リアルタイム添削エディタ
+                </h3>
+                <p class="text-xs text-slate-400">あなたの工事実績を入力し、文字数・定量的数値・NG表現をリアルタイム自動チェック！</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span v-if="essaySaveNotice" class="text-xs text-emerald-400 font-bold animate-pulse">{{ essaySaveNotice }}</span>
+                <button 
+                  @click="copyUserEssayDraft"
+                  class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 shadow">
+                  <span>📋</span> 全文コピー
+                </button>
+                <button 
+                  @click="clearUserEssayDraft"
+                  class="bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-400 px-2.5 py-1.5 rounded-lg text-xs transition-all">
+                  クリア
+                </button>
+              </div>
+            </div>
+
+            <!-- リアルタイム添削・診断バー -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              <!-- 数値チェック -->
+              <div class="p-3 rounded-xl border flex items-center justify-between"
+                   :class="essayQuantitativeCheck.isGood ? 'bg-emerald-950/40 border-emerald-600/60 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-400'">
+                <div>
+                  <span class="text-[11px] block text-slate-400">定量的数値チェック:</span>
+                  <strong class="text-xs" :class="essayQuantitativeCheck.isGood ? 'text-emerald-300' : 'text-amber-400'">
+                    {{ essayQuantitativeCheck.isGood ? '✅ 定量的数値OK' : '⚠️ 数値が不足' }} ({{ essayQuantitativeCheck.count }}箇所)
+                  </strong>
+                </div>
+                <span class="text-lg">{{ essayQuantitativeCheck.isGood ? '🎯' : '📏' }}</span>
+              </div>
+
+              <!-- 抽象語NGチェック -->
+              <div class="p-3 rounded-xl border flex items-center justify-between"
+                   :class="!essayVagueCheck.hasVague ? 'bg-emerald-950/40 border-emerald-600/60 text-emerald-300' : 'bg-rose-950/40 border-rose-600/60 text-rose-300'">
+                <div>
+                  <span class="text-[11px] block text-slate-400">抽象表現（NGワード）:</span>
+                  <strong class="text-xs" :class="!essayVagueCheck.hasVague ? 'text-emerald-300' : 'text-rose-400'">
+                    {{ !essayVagueCheck.hasVague ? '✅ 抽象表現なし' : '⚠️ 減点リスク語あり' }}
+                  </strong>
+                  <span v-if="essayVagueCheck.hasVague" class="text-[10px] block text-rose-300">({{ essayVagueCheck.words.join(', ') }})</span>
+                </div>
+                <span class="text-lg">{{ !essayVagueCheck.hasVague ? '🛡️' : '⚠️' }}</span>
+              </div>
+
+              <!-- テーマ選択 -->
+              <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] block text-slate-400">記述テーマ選択:</span>
+                  <select v-model="userEssayDraft.theme" @change="saveUserEssayDraft" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-white focus:outline-none">
+                    <option value="品質管理">品質管理</option>
+                    <option value="安全管理">安全管理</option>
+                    <option value="施工合理化・工程管理">施工合理化・工程管理</option>
+                  </select>
+                </div>
+                <span class="text-lg">📌</span>
+              </div>
+            </div>
+
+            <!-- 工事概要フォーム -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 mb-5">
+              <h4 class="text-xs font-bold text-amber-400 mb-3 flex items-center gap-1.5">
+                <span>🏗️</span> 工事概要（本番の設問前段）
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">工事名:</label>
+                  <input type="text" v-model="userEssayDraft.projectName" @input="saveUserEssayDraft" placeholder="例: 〇〇共同住宅新築工事" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">発注者名:</label>
+                  <input type="text" v-model="userEssayDraft.clientName" @input="saveUserEssayDraft" placeholder="例: 〇〇不動産株式会社" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">工事場所:</label>
+                  <input type="text" v-model="userEssayDraft.location" @input="saveUserEssayDraft" placeholder="例: 東京都新宿区〇〇" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">構造・規模・用途:</label>
+                  <input type="text" v-model="userEssayDraft.structure" @input="saveUserEssayDraft" placeholder="例: RC造 地上10階 延床6,500m² 共同住宅" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">工期:</label>
+                  <input type="text" v-model="userEssayDraft.period" @input="saveUserEssayDraft" placeholder="例: 令和〇年〇月〜令和〇年〇月" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1 text-[11px]">あなたの立場・役割:</label>
+                  <input type="text" v-model="userEssayDraft.role" @input="saveUserEssayDraft" placeholder="例: 主任技術者（施工計画・品質管理統括）" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white text-xs">
+                </div>
+              </div>
+            </div>
+
+            <!-- 記述本文エリア -->
+            <div class="space-y-4">
+              <!-- 設問1 -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-bold text-amber-300">
+                    〔設問1〕重点管理項目と留意した理由（目的に応じたリスク・放置すると生じる不具合）
+                  </label>
+                  <span class="text-[11px] font-mono text-slate-400">{{ (userEssayDraft.problemReason || '').length }} 文字 (目安: 150〜220字)</span>
+                </div>
+                <textarea 
+                  v-model="userEssayDraft.problemReason" 
+                  @input="saveUserEssayDraft"
+                  rows="4" 
+                  placeholder="【書き出し例】本工事は夏季高温期における大型コンクリート打設を含んでおり、凝結促進に伴うコールドジョイントの発生および初期乾燥収縮ひび割れが懸念された。これらは構造耐力の低下および漏水事故の直接原因となるため、打重ね時間の厳守および湿潤養生の徹底を重点管理項目とした。"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white leading-relaxed focus:outline-none focus:border-amber-500"></textarea>
+              </div>
+
+              <!-- 設問2 -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-bold text-emerald-300">
+                    〔設問2〕現場で実施した具体的措置（定量的数値・工法・管理基準を明記）
+                  </label>
+                  <span class="text-[11px] font-mono text-slate-400">{{ (userEssayDraft.solutionMeasures || '').length }} 文字 (目安: 220〜320字)</span>
+                </div>
+                <textarea 
+                  v-model="userEssayDraft.solutionMeasures" 
+                  @input="saveUserEssayDraft"
+                  rows="6" 
+                  placeholder="【書き出し例】① 配合計画において水セメント比を50%以下、単位水量を175kg/m³以下に抑え、凝結遅延形減水剤を採用した。② 打設区画を幅15mごとに小ブロック化し、ポンプ車2台による並行打設で打重ね時間間隔を夏季基準の2時間以内に確実に収めた。③ 棒状振動機は50cm以下の間隔で鉛直に挿入し、下層に約10cm差し込んで一体化を図った。④ 打込み後は直ちに散水マットで被覆し、圧縮強度が10N/mm²に達するまで7日間の湿潤養生を継続した。"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white leading-relaxed focus:outline-none focus:border-emerald-500"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SUB-TAB 2: 🏗️ 躯体・仕上 施工記述特訓 -->
+        <!-- ============================================== -->
+        <div v-if="secondExamSubTab === 'construction'" class="space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400">工種フィルター:</span>
+              <button 
+                v-for="cat in ['ALL', '躯体工事', '仕上工事']" 
+                :key="cat"
+                @click="cdCategoryFilter = cat"
+                :class="cdCategoryFilter === cat ? 'bg-sky-500 text-slate-950 font-bold' : 'bg-slate-950 text-slate-300 border border-slate-800'"
+                class="px-2.5 py-1 rounded-lg text-xs transition-all">
+                {{ cat }}
+              </button>
+            </div>
+            <span class="text-slate-400 text-[11px]">全 {{ filteredCdList.length }} 問収録（理由・数値基準・是正処置）</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-for="item in filteredCdList" :key="item.id"
+                 class="bg-slate-900 border rounded-2xl p-4 md:p-5 flex flex-col justify-between transition-all shadow"
+                 :class="revealedCdAnswers[item.id] ? 'border-sky-500/80 bg-slate-900/90' : 'border-slate-800'">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[10px] bg-slate-800 text-sky-300 px-2 py-0.5 rounded font-mono font-bold">{{ item.category }}</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-semibold">{{ item.subCategory }}</span>
+                  </div>
+                  <button 
+                    v-if="isSpeechSupported"
+                    @click="narrateCdItem(item)"
+                    class="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 font-bold">
+                    <span>{{ activeSpeechCardId === item.id && isSpeaking ? '⏹ 停止' : '🔊 聴く' }}</span>
+                  </button>
+                </div>
+
+                <h4 class="text-xs font-bold text-amber-300 mb-2">【{{ item.topic }}】</h4>
+                <p class="text-xs text-white leading-relaxed mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800/80">{{ item.question }}</p>
+
+                <!-- 解答・キーワード展開エリア -->
+                <div v-if="revealedCdAnswers[item.id]" class="space-y-3 pt-3 border-t border-slate-800 animate-fadeIn">
+                  <div>
+                    <span class="text-[10px] font-bold text-emerald-400 block mb-1">【模範解答】</span>
+                    <p class="text-xs text-slate-200 leading-relaxed whitespace-pre-line bg-emerald-950/20 p-2.5 rounded-lg border border-emerald-800/50">{{ item.modelAnswer }}</p>
+                  </div>
+
+                  <div>
+                    <span class="text-[10px] font-bold text-amber-400 block mb-1">【必須キーワード】</span>
+                    <div class="flex flex-wrap gap-1">
+                      <span v-for="kw in item.keywords" :key="kw" class="text-[10px] bg-slate-800 text-amber-300 px-2 py-0.5 rounded-full border border-slate-700 font-mono">
+                        {{ kw }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px] text-slate-400">
+                    <strong class="text-slate-300 block mb-0.5">💡 採点官が求めるポイント:</strong>
+                    {{ item.keyCriteria }}
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                @click="toggleCdAnswer(item.id)"
+                class="mt-4 w-full py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1"
+                :class="revealedCdAnswers[item.id] ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700' : 'bg-sky-600 hover:bg-sky-500 text-white border-sky-400 shadow'">
+                <span>{{ revealedCdAnswers[item.id] ? '▲ 解答を閉じる' : '👁️ 模範解答・採点急所を見る' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SUB-TAB 3: 📊 ネットワーク工程表 解法計算 -->
+        <!-- ============================================== -->
+        <div v-if="secondExamSubTab === 'network'" class="space-y-5">
+          
+          <!-- 解法理論カード -->
+          <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 md:p-5 shadow">
+            <h3 class="text-sm md:text-base font-bold text-emerald-300 flex items-center gap-2 mb-3">
+              <span>📐</span> ネットワーク工程表の解法公式（EST・EFT・LST・LFT・TF・FF）
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              <div v-for="(guide, idx) in secondExamBank.networkSchedule?.theoryGuide" :key="idx"
+                   class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <strong class="text-emerald-400 block mb-1 text-xs">{{ guide.step }}</strong>
+                <p class="text-slate-300 text-[11px] whitespace-pre-line leading-relaxed">{{ guide.content }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 問題切り替えタブ -->
+          <div class="flex items-center gap-2">
+            <button 
+              v-for="(drill, idx) in secondExamBank.networkSchedule?.drillProblems" 
+              :key="drill.id"
+              @click="selectedNetworkDrillIndex = idx"
+              :class="selectedNetworkDrillIndex === idx ? 'bg-emerald-500 text-slate-950 font-bold shadow' : 'bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700'"
+              class="px-3.5 py-1.5 rounded-xl border text-xs transition-all flex items-center gap-1.5">
+              <span>📊</span> {{ drill.title }}
+            </button>
+          </div>
+
+          <!-- 問題詳細表示 -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-5">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded font-mono font-bold">問題 {{ selectedNetworkDrillIndex + 1 }}</span>
+                <span class="text-xs text-slate-400">クリティカルパス特定 ＆ フロート計算</span>
+              </div>
+              <h3 class="text-base font-bold text-white mb-2">{{ currentNetworkDrill.title }}</h3>
+              <p class="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">{{ currentNetworkDrill.description }}</p>
+            </div>
+
+            <!-- 作業リストテーブル -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left text-slate-300 border border-slate-800 rounded-xl overflow-hidden">
+                <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+                  <tr>
+                    <th class="px-3 py-2">作業名</th>
+                    <th class="px-3 py-2">始点イベント</th>
+                    <th class="px-3 py-2">終点イベント</th>
+                    <th class="px-3 py-2">所要日数</th>
+                    <th class="px-3 py-2">作業内容</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80 bg-slate-900/60">
+                  <tr v-for="act in currentNetworkDrill.activities" :key="act.name" class="hover:bg-slate-800/40">
+                    <td class="px-3 py-2 font-bold text-amber-400 font-mono">{{ act.name }}</td>
+                    <td class="px-3 py-2 font-mono">{{ act.from }}</td>
+                    <td class="px-3 py-2 font-mono">{{ act.to }}</td>
+                    <td class="px-3 py-2 font-mono font-bold" :class="act.days === 0 ? 'text-slate-500' : 'text-emerald-300'">{{ act.days }}日</td>
+                    <td class="px-3 py-2 text-slate-300">{{ act.desc }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 全経路と所要日数比較 -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <span class="text-xs font-bold text-amber-400 block mb-2">🛣️ 各経路と所要日数の比較（最長経路＝クリティカルパス）:</span>
+              <div class="space-y-1.5 text-xs">
+                <div v-for="(p, pidx) in currentNetworkDrill.paths" :key="pidx"
+                     class="flex items-center justify-between p-2 rounded border"
+                     :class="p.isCritical ? 'bg-amber-950/40 border-amber-600/80 text-amber-200 font-bold' : 'bg-slate-900/60 border-slate-800 text-slate-300'">
+                  <div class="flex items-center gap-2">
+                    <span v-if="p.isCritical" class="text-amber-400">★ クリティカルパス:</span>
+                    <span>{{ p.route }}</span>
+                  </div>
+                  <span class="font-mono">{{ p.days }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 設問と解説リスト -->
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>📝</span> 設問と正解・導出過程
+              </h4>
+              <div v-for="(qitem, qidx) in currentNetworkDrill.questionList" :key="qidx"
+                   class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs">
+                <div class="font-bold text-white mb-2">{{ qitem.q }}</div>
+                <div class="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-800/60 text-emerald-300 leading-relaxed">
+                  <span class="font-bold block text-[10px] text-emerald-400 mb-0.5">【解答・導出】</span>
+                  {{ qitem.a }}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SUB-TAB 4: ⚖️ 法規 穴埋め・短文記述マスター -->
+        <!-- ============================================== -->
+        <div v-if="secondExamSubTab === 'regulations'" class="space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-slate-400">法令カテゴリー:</span>
+              <button 
+                v-for="lcat in ['ALL', '建設業法', '労働安全衛生法', '建築基準法']" 
+                :key="lcat"
+                @click="selectedLawCategory = lcat"
+                :class="selectedLawCategory === lcat ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-950 text-slate-300 border border-slate-800'"
+                class="px-2.5 py-1 rounded-lg text-xs transition-all">
+                {{ lcat }}
+              </button>
+            </div>
+            <span class="text-slate-400 text-[11px]">空欄（【①】）をタップして答え合わせ！</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-for="card in filteredLawList" :key="card.id"
+                 class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-5 flex flex-col justify-between shadow space-y-4">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-[10px] px-2 py-0.5 rounded font-mono font-bold"
+                        :class="card.category === '建設業法' ? 'bg-sky-950 text-sky-300 border border-sky-800' : card.category === '労働安全衛生法' ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-amber-950 text-amber-300 border border-amber-800'">
+                    {{ card.category }}
+                  </span>
+                  <button 
+                    v-if="isSpeechSupported"
+                    @click="narrateLawCard(card)"
+                    class="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 font-bold">
+                    <span>{{ activeSpeechCardId === card.id && isSpeaking ? '⏹ 停止' : '🔊 聴く' }}</span>
+                  </button>
+                </div>
+
+                <h4 class="text-xs font-bold text-white mb-2">{{ card.title }}</h4>
+
+                <!-- 条文（穴埋めインタラクティブ表示） -->
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-200 leading-relaxed mb-3">
+                  <span class="whitespace-pre-line">{{ card.blankCardText }}</span>
+                </div>
+
+                <!-- 空欄めくりボタン群 -->
+                <div class="space-y-1.5">
+                  <span class="text-[10px] font-bold text-slate-400 block">空欄キーワード確認（タップで表示）:</span>
+                  <div class="flex flex-wrap gap-2">
+                    <button 
+                      v-for="b in card.blanks" :key="b.no"
+                      @click="toggleLawBlank(card.id, b.no)"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all border text-left"
+                      :class="isLawBlankRevealed(card.id, b.no) ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'">
+                      <span>{{ isLawBlankRevealed(card.id, b.no) ? b.label : '【' + b.no + '】タップで開く (' + b.hint + ')' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 試験の急所 -->
+                <div class="mt-3 bg-amber-950/20 border border-amber-800/40 p-2.5 rounded-lg text-[11px] text-amber-200/90">
+                  <strong class="text-amber-400 block mb-0.5 text-xs">💡 出題の急所:</strong>
+                  {{ card.examPoint }}
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end pt-2 border-t border-slate-800">
+                <button 
+                  @click="revealAllLawBlanks(card.id)"
+                  class="text-xs text-sky-400 hover:text-sky-300 font-bold">
+                  全空欄を一括オープン →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SUB-TAB 5: 🎧 2次試験 暗記耳学 -->
+        <!-- ============================================== -->
+        <div v-if="secondExamSubTab === 'audio'" class="space-y-4">
+          <div class="bg-slate-900 border border-rose-500/30 rounded-2xl p-4 md:p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <span>🎧</span> 2次試験 記述暗記 耳学（通勤・移動中・就寝前）
+                </h3>
+                <p class="text-xs text-slate-300 mt-1">
+                  記述試験で合格点を取るための「文章のリズム」「理由と措置の言い回し」「具体的数値基準」を音声で流し聞き！
+                </p>
+              </div>
+              <button 
+                v-if="isSpeechSupported"
+                @click="toggleSecondAudioCycle"
+                class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg active:scale-95 shrink-0"
+                :class="isSecondAudioAutoCycle ? 'bg-rose-600 text-white border border-rose-400 animate-pulse' : 'bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 font-extrabold'">
+                <span>{{ isSecondAudioAutoCycle ? '⏹ 耳学を停止' : '▶️ 全5項目を連続聞き流し' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div v-for="(item, idx) in secondAudioList" :key="item.id"
+                 class="bg-slate-900 border rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 transition-all"
+                 :class="activeSpeechCardId === item.id && isSpeaking ? 'border-sky-400 ring-2 ring-sky-400/50 bg-sky-950/20' : 'border-slate-800 hover:border-slate-700'">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono font-bold">Track {{ idx + 1 }}</span>
+                  <span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded font-bold">{{ item.category }}</span>
+                  <span v-if="activeSpeechCardId === item.id && isSpeaking" class="text-[10px] text-sky-400 font-bold animate-pulse">🔊 再生中...</span>
+                </div>
+                <h4 class="text-xs font-bold text-white mb-1">{{ item.title }}</h4>
+                <p class="text-[11px] text-slate-400 line-clamp-2">{{ item.text }}</p>
+              </div>
+              <button 
+                v-if="isSpeechSupported"
+                @click="playSecondAudioItem(item)"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-all active:scale-95 shrink-0 flex items-center gap-1"
+                :class="activeSpeechCardId === item.id && isSpeaking ? 'bg-rose-600 text-white border-rose-500' : 'bg-slate-950 hover:bg-slate-800 text-sky-300 border-slate-700'">
+                <span>{{ activeSpeechCardId === item.id && isSpeaking ? '⏹ 停止' : '🔊 再生' }}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
       </section>
@@ -2214,7 +2844,7 @@
 
   </div>
 
-  <script src="app.js?v=3.4.0"></script>
+  <script src="app.js?v=4.0.0"></script>
 
   <!-- PWA Service Worker 登録 (完全オフライン化 ＆ 自動最新版チェック) -->
   <script>
@@ -2229,7 +2859,7 @@
       });
 
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=3.4.0')
+        navigator.serviceWorker.register('./sw.js?v=4.0.0')
           .then((reg) => {
             console.log('[PWA] Service Worker registered:', reg.scope);
             // 起動時にバックグラウンドで即座にGitHubの更新をチェック
